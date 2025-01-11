@@ -28,23 +28,23 @@ namespace rfl::flatbuf {
 class Writer {
  public:
   struct FlatbufOutputArray {
-    uoffset_t offset_ = 0;
+    flatbuffers::uoffset_t offset_ = 0;
     size_t ix_ = 0;
   };
 
   struct FlatbufOutputMap {
-    uoffset_t offset_ = 0;
+    flatbuffers::uoffset_t offset_ = 0;
     size_t ix_ = 0;
   };
 
   struct FlatbufOutputObject {
-    voffset_t* field_offsets_ = nullptr;
+    flatbuffers::voffset_t* field_offsets_ = nullptr;
     uoffset_t offset_ = 0;
     size_t ix_ = 0;
   };
 
   struct FlatbufOutputUnion {
-    uoffset_t offset_ = 0;
+    flatbuffers::uoffset_t offset_ = 0;
   };
 
   struct FlatbufOutputVar {};
@@ -62,14 +62,14 @@ class Writer {
   template <class T>
   OutputArrayType array_as_root(const T _size) const noexcept {
     static_assert(always_false_v<T>,
-                  "In Cap'n Proto, root values must always be structs.");
+                  "In flatbuffers, root values must always be structs.");
     throw std::runtime_error("Unsupported.");
   }
 
   template <class T>
   OutputMapType map_as_root(const T _size) const noexcept {
     static_assert(always_false_v<T>,
-                  "In Cap'n Proto, root values must always be structs.");
+                  "In flatbuffers, root values must always be structs.");
     throw std::runtime_error("Unsupported.");
   }
 
@@ -78,21 +78,21 @@ class Writer {
   template <class T = int>
   OutputVarType null_as_root() const noexcept {
     static_assert(always_false_v<T>,
-                  "In Cap'n Proto, root values must always be structs.");
+                  "In flatbuffers, root values must always be structs.");
     throw std::runtime_error("Unsupported.");
   }
 
   template <class T = int>
   OutputUnionType union_as_root() const noexcept {
     static_assert(always_false_v<T>,
-                  "In Cap'n Proto, root values must always be structs.");
+                  "In flatbuffers, root values must always be structs.");
     throw std::runtime_error("Unsupported.");
   }
 
   template <class T>
   OutputVarType value_as_root(const T& _var) const noexcept {
     static_assert(always_false_v<T>,
-                  "In Cap'n Proto, root values must always be structs.");
+                  "In flatbuffers, root values must always be structs.");
     throw std::runtime_error("Unsupported.");
   }
 

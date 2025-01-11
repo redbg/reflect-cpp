@@ -1,7 +1,8 @@
 #ifndef RFL_FLATBUF_READER_HPP_
 #define RFL_FLATBUF_READER_HPP_
 
-#include <capnp/dynamic.h>
+#include <flatbuffers/flatbuffers.h>
+#include <flatbuffers/reflection.h>
 
 #include <cstddef>
 #include <exception>
@@ -21,23 +22,23 @@ namespace rfl::flatbuf {
 class Reader {
  public:
   struct FlatbufInputArray {
-    capnp::DynamicList::Reader val_;
+    const flatbuffers::VectorOfAny* val_;
   };
 
   struct FlatbufInputMap {
-    capnp::DynamicStruct::Reader val_;
+    const uint8_t* val_;
   };
 
   struct FlatbufInputObject {
-    capnp::DynamicStruct::Reader val_;
+    const flatbuffers::Table* val_;
   };
 
   struct FlatbufInputUnion {
-    capnp::DynamicStruct::Reader val_;
+    const uint8_t* val_;
   };
 
   struct FlatbufInputVar {
-    capnp::DynamicValue::Reader val_;
+    const uint8_t* val_;
   };
 
   using InputArrayType = FlatbufInputArray;
@@ -128,28 +129,16 @@ class Reader {
 
   template <class MapReader>
   std::optional<Error> read_map(const MapReader& _map_reader,
-                                const InputMapType& _map) const noexcept {
-    try {
-      const auto entries = _map.val_.get("entries").as<capnp::DynamicList>();
-      for (auto entry : entries) {
-        auto s = entry.template as<capnp::DynamicStruct>();
-        const char* key = s.get("key").as<capnp::Text>().cStr();
-        _map_reader.read(std::string_view(key), InputVarType{s.get("value")});
-      }
-      return std::nullopt;
-    } catch (std::exception& e) {
-      return Error{e.what()};
-    }
-  }
+                                const InputMapType& _map) const noexcept {}
 
   template <class ObjectReader>
   std::optional<Error> read_object(const ObjectReader& _object_reader,
                                    const InputObjectType& _obj) const noexcept {
-    int i = 0;
-    for (auto field : _obj.val_.getSchema().getFields()) {
-      _object_reader.read(i++, InputVarType{_obj.val_.get(field)});
+    constexpr auto offset_array = offset_array<typename ObjectReader::ViewType>;
+    for (size_t i = 0; i < offset_array.size(); ++i) {
+      _object_reader.read(
+          i, InputVarType{_obj.val_->GetAddressOf(offset_array[i])});
     }
-    return std::nullopt;
   }
 
   template <class VariantType, class UnionReaderType>
