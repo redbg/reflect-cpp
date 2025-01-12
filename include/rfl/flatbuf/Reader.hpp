@@ -55,51 +55,33 @@ class Reader {
 
   template <class T>
   rfl::Result<T> to_basic_type(const InputVarType& _var) const noexcept {
-    const auto type = _var.val_.getType();
+    if (!_var.val_) {
+      return Error("Could not cast, was a nullptr.");
+    }
     if constexpr (std::is_same<std::remove_cvref_t<T>, std::string>()) {
-      if (type != capnp::DynamicValue::TEXT) {
-        return Error("Could not cast to string.");
-      }
-      return std::string(_var.val_.as<capnp::Text>().cStr());
+      return internal::ptr_cast<const flatbuffers::String*>(
+                 apply_ptr_correction(_var.val_))
+          ->str();
 
-    } else if constexpr (std::is_same<std::remove_cvref_t<T>,
-                                      rfl::Bytestring>()) {
-      if (type != capnp::DynamicValue::DATA) {
-        return Error("Could not cast to bytestring.");
-      }
-      const auto data = _var.val_.as<capnp::Data>();
-      return rfl::Bytestring(internal::ptr_cast<const std::byte*>(data.begin()),
-                             data.size());
+      /*} else if constexpr (std::is_same<std::remove_cvref_t<T>,
+                                        rfl::Bytestring>()) {
+        if (type != capnp::DynamicValue::DATA) {
+          return Error("Could not cast to bytestring.");
+        }
+        const auto data = _var.val_.as<capnp::Data>();
+        return rfl::Bytestring(internal::ptr_cast<const
+        std::byte*>(data.begin()), data.size());*/
 
-    } else if constexpr (std::is_same<std::remove_cvref_t<T>, bool>()) {
-      if (type != capnp::DynamicValue::BOOL) {
-        return rfl::Error("Could not cast to boolean.");
-      }
-      return _var.val_.as<bool>();
-
-    } else if constexpr (std::is_floating_point<std::remove_cvref_t<T>>() ||
+    } else if constexpr (std::is_same<std::remove_cvref_t<T>, bool>() ||
+                         std::is_floating_point<std::remove_cvref_t<T>>() ||
                          std::is_integral<std::remove_cvref_t<T>>()) {
-      switch (type) {
-        case capnp::DynamicValue::INT:
-          return static_cast<T>(_var.val_.as<int64_t>());
+      return *flatbuffers::ReadScalar<const T*>(_var.val_);
 
-        case capnp::DynamicValue::UINT:
-          return static_cast<T>(_var.val_.as<uint64_t>());
-
-        case capnp::DynamicValue::FLOAT:
-          return static_cast<T>(_var.val_.as<double>());
-
-        default:
-          return rfl::Error(
-              "Could not cast to numeric value. The type must be integral, "
-              "float or double.");
-      }
-
-    } else if constexpr (internal::is_literal_v<T>) {
-      if (type != capnp::DynamicValue::ENUM) {
-        return rfl::Error("Could not cast to an enum.");
-      }
-      return T::from_value(_var.val_.as<capnp::DynamicEnum>().getRaw());
+      /*} else if constexpr (internal::is_literal_v<T>) {
+        if (type != capnp::DynamicValue::ENUM) {
+          return rfl::Error("Could not cast to an enum.");
+        }
+        return T::from_value(_var.val_.as<capnp::DynamicEnum>().getRaw());*/
 
     } else {
       static_assert(rfl::always_false_v<T>, "Unsupported type.");
@@ -118,8 +100,13 @@ class Reader {
   template <class ArrayReader>
   std::optional<Error> read_array(const ArrayReader& _array_reader,
                                   const InputArrayType& _arr) const noexcept {
-    for (auto element : _arr.val_) {
-      const auto err = _array_reader.read(InputVarType{std::move(element)});
+    constexpr size_t elem_size =
+        calc_elem_size<typename ArrayReader::ValueType>();  // TODO
+    const size_t size = static_cast<size_t>(_arr.val_->size()) / elem_size;
+    for (size_t i = 0; i < size; ++i) {
+      const auto err = _array_reader.read(
+          InputVarType{flatbuffers::GetAnyVectorElemAddressOf<const uint8_t*>(
+              _arr.val_, i, elem_size)});
       if (err) {
         return err;
       }
@@ -129,12 +116,15 @@ class Reader {
 
   template <class MapReader>
   std::optional<Error> read_map(const MapReader& _map_reader,
-                                const InputMapType& _map) const noexcept {}
+                                const InputMapType& _map) const noexcept {
+    // TODO
+  }
 
   template <class ObjectReader>
   std::optional<Error> read_object(const ObjectReader& _object_reader,
                                    const InputObjectType& _obj) const noexcept {
-    constexpr auto offset_array = offset_array<typename ObjectReader::ViewType>;
+    constexpr auto offset_array =
+        offset_array<typename ObjectReader::ViewType>;  // TODO
     for (size_t i = 0; i < offset_array.size(); ++i) {
       _object_reader.read(
           i, InputVarType{_obj.val_->GetAddressOf(offset_array[i])});
@@ -144,13 +134,7 @@ class Reader {
   template <class VariantType, class UnionReaderType>
   rfl::Result<VariantType> read_union(
       const InputUnionType& _union) const noexcept {
-    const auto opt_pair = identify_discriminant(_union);
-    if (!opt_pair) {
-      return Error("Could not get the discriminant.");
-    }
-    const auto& [field, disc] = *opt_pair;
-    return UnionReaderType::read(*this, disc,
-                                 InputVarType{_union.val_.get(field)});
+    // TODO
   }
 
   template <class T>
@@ -164,8 +148,9 @@ class Reader {
   }
 
  private:
-  std::optional<std::pair<capnp::StructSchema::Field, size_t>>
-  identify_discriminant(const InputUnionType& _union) const noexcept;
+  const uint8_t* apply_ptr_correction(const uint8_t* _ptr) {
+    return _ptr + flatbuffers::ReadScalar<flatbuffers::uoffset_t>(_ptr);
+  }
 };
 
 }  // namespace rfl::flatbuf
