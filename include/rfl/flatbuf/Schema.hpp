@@ -15,21 +15,14 @@ class Schema {
  public:
   using Type = std::remove_cvref_t<T>;
 
-  Schema(const std::string& _str) : impl_(Ref<SchemaImpl>::make(_str)) {}
-
-  static Result<Schema<T>> from_string(const std::string& _str) noexcept {
-    try {
-      return Schema<T>(_str);
-    } catch (std::exception& e) {
-      return Error(e.what());
-    }
-  }
+  Schema(const parsing::schema::Type& _internal_schema)
+      : impl_(Ref<SchemaImpl>::make(_internal_schema)) {}
 
   /// The string used to create this schema.
   const std::string& str() const { return impl_->str(); }
 
   /// The struct schema used to generate new values.
-  const capnp::ParsedSchema& value() const { return impl_->value(); };
+  const schema::Type& value() const { return impl_->value(); };
 
  private:
   /// We are using the "pimpl"-pattern

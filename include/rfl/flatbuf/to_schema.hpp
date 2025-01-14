@@ -16,12 +16,10 @@
 #include "../parsing/schema/make.hpp"
 #include "Schema.hpp"
 #include "Writer.hpp"
+#include "parsing/schema/Type.hpp"
 #include "schema/Type.hpp"
 
 namespace rfl::flatbuf {
-
-std::string to_string_representation(
-    const parsing::schema::Definition& internal_schema);
 
 /// This ensures that the schema is only generated once.
 template <class T, class... Ps>
@@ -29,7 +27,7 @@ struct SchemaHolder {
   static SchemaHolder<T, Ps...> make() noexcept {
     const auto internal_schema =
         parsing::schema::make<Reader, Writer, T, Processors<Ps...>>();
-    return SchemaHolder<T, Ps...>{Schema<T>::from_internal_schema(str)};
+    return SchemaHolder<T, Ps...>{Schema<T>(internal_schema)};
   }
 
   Schema<T> schema_;
@@ -39,10 +37,10 @@ template <class T, class... Ps>
 static const SchemaHolder<T, Ps...> schema_holder =
     SchemaHolder<T, Ps...>::make();
 
-/// Returns the Cap'n Proto schema for a class.
+/// Returns the flatbuffers schema for a class.
 template <class T, class... Ps>
 Schema<T> to_schema() {
-  return schema_holder<T, Ps...>.schema_.value();
+  return schema_holder<T, Ps...>.schema_;
 }
 }  // namespace rfl::flatbuf
 

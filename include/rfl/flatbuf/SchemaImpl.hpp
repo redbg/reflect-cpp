@@ -1,41 +1,32 @@
 #ifndef RFL_FLATBUF_SCHEMAIMPL_HPP_
 #define RFL_FLATBUF_SCHEMAIMPL_HPP_
 
-#include <capnp/schema-parser.h>
-
 #include <memory>
 #include <string>
 
 #include "../Result.hpp"
+#include "flatbuf/schema/Type.hpp"
 
 namespace rfl::flatbuf {
 
 class SchemaImpl {
  public:
-  SchemaImpl(const std::string& _str);
+  SchemaImpl(const parsing::schema::Type& _internal_schema);
 
   ~SchemaImpl() = default;
 
-  /// The JSON string used to create this schema.
+  /// The string used to reproduce this schema.
   const std::string& str() const { return str_; }
 
   /// The interface used to create new values.
-  const capnp::ParsedSchema& value() const { return *schema_; };
-
- private:
-  static capnp::ParsedSchema make_schema(const std::string& _str,
-                                         capnp::SchemaParser* _parser);
+  const schema::Type& value() const { return *schema_; };
 
  private:
   /// The string used to create the schema.
   std::string str_;
 
-  /// The schema parser - we need to hold onto this during the lifetime of the
-  /// schema.
-  Box<capnp::SchemaParser> schema_parser_;
-
   /// The actual schema
-  Box<capnp::ParsedSchema> schema_;
+  Box<schema::Type> schema_;
 };
 
 }  // namespace rfl::flatbuf
