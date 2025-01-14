@@ -28,13 +28,11 @@ template <class T, class... Ps>
 struct SchemaHolder {
   static SchemaHolder<T, Ps...> make() noexcept {
     const auto internal_schema =
-        parsing::schema::make<Reader, Writer, T,
-                              Processors<SnakeCaseToCamelCase, Ps...>>();
-    const auto str = to_string_representation(internal_schema);
-    return SchemaHolder<T, Ps...>{Schema<T>::from_string(str)};
+        parsing::schema::make<Reader, Writer, T, Processors<Ps...>>();
+    return SchemaHolder<T, Ps...>{Schema<T>::from_internal_schema(str)};
   }
 
-  rfl::Result<Schema<T>> schema_;
+  Schema<T> schema_;
 };
 
 template <class T, class... Ps>

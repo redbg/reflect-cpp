@@ -1,6 +1,8 @@
 #ifndef RFL_FLATBUF_SCHEMA_TYPE_HPP_
 #define RFL_FLATBUF_SCHEMA_TYPE_HPP_
 
+#include <flatbuffers.h>
+
 #include <iostream>
 #include <map>
 #include <memory>
@@ -15,9 +17,11 @@
 namespace rfl::flatbuf::schema {
 
 struct Type {
-  struct Void {};
-
   struct Bool {};
+
+  struct Byte {};
+
+  struct UByte {};
 
   struct Int8 {};
 
@@ -39,16 +43,14 @@ struct Type {
 
   struct Float64 {};
 
-  struct Data {};
-
-  struct Text {};
+  struct String {};
 
   struct Enum {
     std::string name;
     std::vector<std::string> fields;
   };
 
-  struct List {
+  struct Vector {
     rfl::Ref<Type> type;
   };
 
@@ -60,9 +62,14 @@ struct Type {
     std::string type_name;
   };
 
-  struct Struct {
+  struct Table {
+    struct Field {
+      std::string name;
+      Type type;
+      std::uoffset_t offset;
+    };
     std::string name;
-    std::vector<std::pair<std::string, Type>> fields;
+    std::vector<Field> fields;
   };
 
   struct Union {
@@ -71,9 +78,9 @@ struct Type {
   };
 
   using ReflectionType =
-      rfl::Variant<Void, Bool, Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32,
-                   UInt64, Float32, Float64, Data, Enum, List, Map, Reference,
-                   Struct, Text, Union>;
+      rfl::Variant<Bool, Byte, UByte, Int8, Int16, Int32, Int64, UInt8, UInt16,
+                   UInt32, UInt64, Float32, Float64, String, Enum, Vector, Map,
+                   Reference, Table, Union>;
 
   const auto& reflection() const { return value; }
 
