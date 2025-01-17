@@ -50,6 +50,10 @@ struct Type {
     std::vector<std::string> fields;
   };
 
+  struct Optional {
+    rfl::Ref<Type> type;
+  };
+
   struct Vector {
     rfl::Ref<Type> type;
   };
@@ -79,8 +83,8 @@ struct Type {
 
   using ReflectionType =
       rfl::Variant<Bool, Byte, UByte, Int8, Int16, Int32, Int64, UInt8, UInt16,
-                   UInt32, UInt64, Float32, Float64, String, Enum, Vector, Map,
-                   Reference, Table, Union>;
+                   UInt32, UInt64, Float32, Float64, String, Enum, Optional,
+                   Vector, Map, Reference, Table, Union>;
 
   const auto& reflection() const { return value; }
 

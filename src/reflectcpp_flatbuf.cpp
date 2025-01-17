@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2023-2025 Code17 GmbH
+Copyright (c) 2023-2024 Code17 GmbH
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,13 @@ SOFTWARE.
 
 */
 
-#include "rfl/flatbuf/SchemaImpl.hpp"
+// This file include all other source files, so that the user of the library
+// don't need to add multiple source files into their build.
+// Also, this speeds up compile time, compared to multiple separate .cpp files
+// compilation.
 
-#include <sstream>
-
-#include "rfl/flatbuf/schema/FlatbufTypes.hpp"
-#include "rfl/flatbuf/schema/internal_schema_to_flatbuf_schema.hpp"
-
-namespace rfl::flatbuf {
-
-SchemaImpl::SchemaImpl(const parsing::schema::Type& _internal_schema)
-    : schema_(internal_schema_to_flatbuf_schema(_internal_schema)) {}
-
-std::string SchemaImpl::str() const {
-  std::stringstream stream;
-  stream << schema_;
-  return stream.str();
-}
-
-}  // namespace rfl::flatbuf
+// #include "rfl/flatbuf/Reader.cpp"
+#include "rfl/flatbuf/SchemaImpl.cpp"
+// #include "rfl/flatbuf/Writer.cpp"
+#include "rfl/flatbuf/Type.cpp"
+#include "rfl/flatbuf/schema/internal_schema_to_flatbuf_schema.cpp"

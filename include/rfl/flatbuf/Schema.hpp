@@ -19,7 +19,7 @@ class Schema {
       : impl_(Ref<SchemaImpl>::make(_internal_schema)) {}
 
   /// The string used to create this schema.
-  const std::string& str() const { return impl_->str(); }
+  std::string str() const { return impl_->str(); }
 
   /// The struct schema used to generate new values.
   const schema::Type& value() const { return impl_->value(); };
