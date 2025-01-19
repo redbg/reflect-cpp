@@ -12,7 +12,7 @@ struct FlatbufTypes {
   std::map<std::string, Type> enums_;
   std::map<std::string, Type> tuples_;
   std::map<std::string, Type> unions_;
-  Type root_;
+  Type::Reference root_type_;
 };
 
 std::ostream& operator<<(std::ostream& _os, const FlatbufTypes& _flatbuf_types);

@@ -76,9 +76,21 @@ Type literal_to_flatbuf_schema_type(
   }
 }
 
+Type::Reference make_root_type(const parsing::schema::Type& _t) {
+  return _t.variant_.visit([](const auto& _r) {
+    using T = std::remove_cvref_t<decltype(_r)>;
+    if constexpr (std::is_same<T, parsing::schema::Type::Reference>()) {
+      return Type::Reference{.type_name = _r.name_};
+    } else {
+      return Type::Reference{.type_name = "Error: Root type must be a struct."};
+    }
+  });
+}
+
 FlatbufTypes internal_schema_to_flatbuf_schema(
     const parsing::schema::Definition& _internal_schema) {
-  FlatbufTypes flatbuf_types;
+  FlatbufTypes flatbuf_types{.root_type_ =
+                                 make_root_type(_internal_schema.root_)};
   for (const auto& [name, def] : _internal_schema.definitions_) {
     if (!is_named_type(def)) {
       continue;

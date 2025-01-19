@@ -40,7 +40,8 @@ std::ostream& operator<<(std::ostream& _os,
 std::ostream& operator<<(std::ostream& _os,
                          const FlatbufTypes& _flatbuf_types) {
   _os << _flatbuf_types.structs_ << _flatbuf_types.enums_
-      << _flatbuf_types.tuples_ << _flatbuf_types.unions_;
+      << _flatbuf_types.tuples_ << _flatbuf_types.unions_ << "root_type "
+      << _flatbuf_types.root_type_ << ";";
   return _os;
 }
 

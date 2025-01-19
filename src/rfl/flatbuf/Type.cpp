@@ -105,8 +105,9 @@ std::ostream& operator<<(std::ostream& _os, const Type::String&) {
 }
 
 std::ostream& operator<<(std::ostream& _os, const Type::Enum& _e) {
-  return _os << "enum " << _e.name << ": uint16 { "
-             << internal::strings::join(", ", _e.fields) << " }" << std::endl;
+  return _os << "enum " << internal::strings::to_pascal_case(_e.name)
+             << ": uint16 { " << internal::strings::join(", ", _e.fields)
+             << " }" << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& _os, const Type::Vector& _v) {
@@ -122,9 +123,10 @@ std::ostream& operator<<(std::ostream& _os, const Type::Optional& _o) {
 }
 
 std::ostream& operator<<(std::ostream& _os, const Type::Table& _t) {
-  _os << "table " << _t.name << " {" << std::endl;
+  _os << "table " << internal::strings::to_pascal_case(_t.name) << " {"
+      << std::endl;
   for (const auto& f : _t.fields) {
-    _os << " " << f.name << ":" << f.type << ";" << std::endl;
+    _os << " " << f.name << ":" << *f.type << ";" << std::endl;
   }
   return _os << "}" << std::endl;
 }
@@ -134,7 +136,7 @@ std::ostream& operator<<(std::ostream& _os, const Type::Union& _u) {
 }
 
 std::ostream& operator<<(std::ostream& _os, const Type::Reference& _r) {
-  return _os << _r.type_name;
+  return _os << internal::strings::to_pascal_case(_r.type_name);
 }
 
 std::ostream& operator<<(std::ostream& _os, const Type& _t) {
