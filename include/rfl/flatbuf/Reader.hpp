@@ -16,6 +16,7 @@
 #include "../always_false.hpp"
 #include "../internal/is_literal.hpp"
 #include "../internal/ptr_cast.hpp"
+#include "calc_elem_size.hpp"
 #include "calc_vtable_offset.hpp"
 
 namespace rfl::flatbuf {
@@ -101,14 +102,13 @@ class Reader {
   template <class ArrayReader>
   std::optional<Error> read_array(const ArrayReader& _array_reader,
                                   const InputArrayType& _arr) const noexcept {
-    // TODO
-    // constexpr size_t elem_size =
-    //  calc_elem_size<typename ArrayReader::ValueType>();
-    // const size_t size = static_cast<size_t>(_arr.val_->size()) / elem_size;
-    for (size_t i = 0; i < 0 /* TODO */; ++i) {
+    constexpr size_t elem_size =
+        calc_elem_size<typename ArrayReader::ValueType>();
+    const size_t size = static_cast<size_t>(_arr.val_->size()) / elem_size;
+    for (size_t i = 0; i < size; ++i) {
       const auto err = _array_reader.read(
           InputVarType{flatbuffers::GetAnyVectorElemAddressOf<const uint8_t*>(
-              _arr.val_, i, 0 /* TODO */)});
+              _arr.val_, i, elem_size)});
       if (err) {
         return err;
       }
