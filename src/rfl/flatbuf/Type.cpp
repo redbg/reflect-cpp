@@ -126,7 +126,7 @@ std::ostream& operator<<(std::ostream& _os, const Type::Table& _t) {
   _os << "table " << internal::strings::to_pascal_case(_t.name) << " {"
       << std::endl;
   for (const auto& f : _t.fields) {
-    _os << " " << f.name << ":" << *f.type << ";" << std::endl;
+    _os << " " << f.first << ":" << f.second << ";" << std::endl;
   }
   return _os << "}" << std::endl;
 }

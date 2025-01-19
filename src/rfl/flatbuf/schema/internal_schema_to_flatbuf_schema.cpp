@@ -107,11 +107,9 @@ Type object_to_flatbuf_schema_type(
     const bool _is_top_level, FlatbufTypes* _flatbuf_types) {
   Type::Table table_schema;
   for (const auto& [k, v] : _obj.types_) {
-    table_schema.fields.push_back(Type::Table::Field{
-        .name = k,
-        .type = rfl::Ref<Type>::make(type_to_flatbuf_schema_type(
-            v, _definitions, false, _flatbuf_types)),
-        .offset = 0 /* TODO*/});
+    table_schema.fields.push_back(std::make_pair(
+        k,
+        type_to_flatbuf_schema_type(v, _definitions, false, _flatbuf_types)));
   }
   if (_is_top_level) {
     return Type{.value = table_schema};
