@@ -13,7 +13,9 @@ template <class R, class W, class VecType, class ProcessorsType>
 class VectorReader {
  private:
   using InputVarType = typename R::InputVarType;
-  using T = typename VecType::value_type;
+
+ public:
+  using ValueType = typename VecType::value_type;
 
  public:
   VectorReader(const R* _r, VecType* _vec) : r_(_r), vec_(_vec) {}
@@ -25,8 +27,8 @@ class VectorReader {
       if constexpr (is_map_like_v<VecType>) {
         return get_pair(_var);
       } else {
-        return Parser<R, W, std::remove_cvref_t<T>, ProcessorsType>::read(*r_,
-                                                                          _var);
+        return Parser<R, W, std::remove_cvref_t<ValueType>,
+                      ProcessorsType>::read(*r_, _var);
       }
     };
 
@@ -44,8 +46,8 @@ class VectorReader {
 
  private:
   auto get_pair(const auto& _var) const {
-    using K = std::remove_cvref_t<typename T::first_type>;
-    using V = std::remove_cvref_t<typename T::second_type>;
+    using K = std::remove_cvref_t<typename ValueType::first_type>;
+    using V = std::remove_cvref_t<typename ValueType::second_type>;
     return Parser<R, W, std::remove_cvref_t<std::pair<K, V>>,
                   ProcessorsType>::read(*r_, _var);
   }
