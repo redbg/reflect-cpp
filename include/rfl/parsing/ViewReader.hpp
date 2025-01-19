@@ -44,6 +44,9 @@ class ViewReader {
                              std::make_integer_sequence<int, size_>());
   }
 
+  /// Returns the size of the underlying view.
+  static constexpr size_t size() { return size_; }
+
  private:
   template <int i, class FieldType>
   static bool is_matching(const int _current_index) {

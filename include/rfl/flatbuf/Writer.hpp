@@ -23,6 +23,7 @@
 #include "../always_false.hpp"
 #include "../internal/is_literal.hpp"
 #include "../internal/ptr_cast.hpp"
+#include "calc_vtable_offset.hpp"
 
 namespace rfl::flatbuf {
 
@@ -39,7 +40,6 @@ class Writer {
   };
 
   struct FlatbufOutputObject {
-    flatbuffers::voffset_t* field_offsets_ = nullptr;
     flatbuffers::uoffset_t offset_ = 0;
     size_t ix_ = 0;
   };
@@ -179,7 +179,7 @@ class Writer {
                                     OutputObjectType* _parent) const noexcept {
     if constexpr (std::is_same<std::remove_cvref_t<T>, std::string>()) {
       const auto str = fbb_->CreateString(_var.c_str(), _var.size());
-      fbb_->AddOffset(_parent->field_offsets_[_parent->ix_++], str);
+      fbb_->AddOffset(calc_vtable_offset(_parent->ix_++), str);
 
       // TODO
       // } else if constexpr (std::is_same<std::remove_cvref_t<T>,
@@ -188,7 +188,7 @@ class Writer {
     } else if constexpr (std::is_floating_point<std::remove_cvref_t<T>>() ||
                          std::is_same<std::remove_cvref_t<T>, bool>() ||
                          std::is_integral<std::remove_cvref_t<T>>()) {
-      fbb_->AddElement<T>(_parent->field_offsets_[_parent->ix_++], _var);
+      fbb_->AddElement<T>(calc_vtable_offset(_parent->ix_++), _var);
 
       // TODO
       //} else if constexpr (internal::is_literal_v<T>) {

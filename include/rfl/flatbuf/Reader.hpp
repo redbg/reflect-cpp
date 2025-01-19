@@ -16,6 +16,7 @@
 #include "../always_false.hpp"
 #include "../internal/is_literal.hpp"
 #include "../internal/ptr_cast.hpp"
+#include "calc_vtable_offset.hpp"
 
 namespace rfl::flatbuf {
 
@@ -124,13 +125,10 @@ class Reader {
   template <class ObjectReader>
   std::optional<Error> read_object(const ObjectReader& _object_reader,
                                    const InputObjectType& _obj) const noexcept {
-    // TODO
-    // constexpr auto offset_array =
-    //    offset_array<typename ObjectReader::ViewType>;
-    for (size_t i = 0; i < 0 /*TODO offset_array.size()*/; ++i) {
+    constexpr size_t size = ObjectReader::size();
+    for (size_t i = 0; i < size; ++i) {
       _object_reader.read(
-          i,
-          InputVarType{_obj.val_->GetAddressOf(0 /* TODO offset_array[i]*/)});
+          i, InputVarType{_obj.val_->GetAddressOf(calc_vtable_offset(i))});
     }
   }
 
