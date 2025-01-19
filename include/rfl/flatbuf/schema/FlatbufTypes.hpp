@@ -15,20 +15,7 @@ struct FlatbufTypes {
   Type root_;
 };
 
-std::ostream& operator<<(std::ostream& _os,
-                         const std::map<std::string, Type>& _map) {
-  for (const auto& [name, type] : _map) {
-    _os << type.with_name(name) << std::endl << std::endl;
-  }
-  return _os;
-}
-
-std::ostream& operator<<(std::ostream& _os,
-                         const FlatbufTypes& _flatbuf_types) {
-  _os << _flatbuf_types.structs_ << _flatbuf_types.enums_
-      << _flatbuf_types.tuples_ << _flatbuf_types.unions_;
-  return _os;
-}
+std::ostream& operator<<(std::ostream& _os, const FlatbufTypes& _flatbuf_types);
 
 }  // namespace rfl::flatbuf::schema
 

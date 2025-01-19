@@ -1,3 +1,4 @@
+
 /*
 
 MIT License
@@ -24,22 +25,23 @@ SOFTWARE.
 
 */
 
-#include "rfl/flatbuf/SchemaImpl.hpp"
-
-#include <sstream>
-
 #include "rfl/flatbuf/schema/FlatbufTypes.hpp"
-#include "rfl/flatbuf/schema/internal_schema_to_flatbuf_schema.hpp"
 
-namespace rfl::flatbuf {
+namespace rfl::flatbuf::schema {
 
-SchemaImpl::SchemaImpl(const parsing::schema::Definition& _internal_schema)
-    : schema_(schema::internal_schema_to_flatbuf_schema(_internal_schema)) {}
-
-std::string SchemaImpl::str() const {
-  std::stringstream stream;
-  stream << schema_;
-  return stream.str();
+std::ostream& operator<<(std::ostream& _os,
+                         const std::map<std::string, Type>& _map) {
+  for (const auto& [name, type] : _map) {
+    _os << type.with_name(name) << std::endl << std::endl;
+  }
+  return _os;
 }
 
-}  // namespace rfl::flatbuf
+std::ostream& operator<<(std::ostream& _os,
+                         const FlatbufTypes& _flatbuf_types) {
+  _os << _flatbuf_types.structs_ << _flatbuf_types.enums_
+      << _flatbuf_types.tuples_ << _flatbuf_types.unions_;
+  return _os;
+}
+
+}  // namespace rfl::flatbuf::schema

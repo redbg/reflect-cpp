@@ -28,6 +28,10 @@ if (REFLECTCPP_CBOR)
     add_subdirectory(cbor)
 endif()
 
+if (REFLECTCPP_FLATBUFFERS)
+    add_subdirectory(flatbuffers)
+endif()
+
 if (REFLECTCPP_FLEXBUFFERS)
     add_subdirectory(flexbuffers)
 endif()

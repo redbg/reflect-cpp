@@ -100,13 +100,14 @@ class Reader {
   template <class ArrayReader>
   std::optional<Error> read_array(const ArrayReader& _array_reader,
                                   const InputArrayType& _arr) const noexcept {
-    constexpr size_t elem_size =
-        calc_elem_size<typename ArrayReader::ValueType>();  // TODO
-    const size_t size = static_cast<size_t>(_arr.val_->size()) / elem_size;
-    for (size_t i = 0; i < size; ++i) {
+    // TODO
+    // constexpr size_t elem_size =
+    //  calc_elem_size<typename ArrayReader::ValueType>();
+    // const size_t size = static_cast<size_t>(_arr.val_->size()) / elem_size;
+    for (size_t i = 0; i < 0 /* TODO */; ++i) {
       const auto err = _array_reader.read(
           InputVarType{flatbuffers::GetAnyVectorElemAddressOf<const uint8_t*>(
-              _arr.val_, i, elem_size)});
+              _arr.val_, i, 0 /* TODO */)});
       if (err) {
         return err;
       }
@@ -123,11 +124,13 @@ class Reader {
   template <class ObjectReader>
   std::optional<Error> read_object(const ObjectReader& _object_reader,
                                    const InputObjectType& _obj) const noexcept {
-    constexpr auto offset_array =
-        offset_array<typename ObjectReader::ViewType>;  // TODO
-    for (size_t i = 0; i < offset_array.size(); ++i) {
+    // TODO
+    // constexpr auto offset_array =
+    //    offset_array<typename ObjectReader::ViewType>;
+    for (size_t i = 0; i < 0 /*TODO offset_array.size()*/; ++i) {
       _object_reader.read(
-          i, InputVarType{_obj.val_->GetAddressOf(offset_array[i])});
+          i,
+          InputVarType{_obj.val_->GetAddressOf(0 /* TODO offset_array[i]*/)});
     }
   }
 
@@ -148,7 +151,7 @@ class Reader {
   }
 
  private:
-  const uint8_t* apply_ptr_correction(const uint8_t* _ptr) {
+  const uint8_t* apply_ptr_correction(const uint8_t* _ptr) const noexcept {
     return _ptr + flatbuffers::ReadScalar<flatbuffers::uoffset_t>(_ptr);
   }
 };

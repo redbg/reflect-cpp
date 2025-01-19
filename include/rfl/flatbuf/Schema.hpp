@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include "../Ref.hpp"
+#include "../parsing/schema/Definition.hpp"
 #include "SchemaImpl.hpp"
 #include "schema/FlatbufTypes.hpp"
 
@@ -16,7 +17,7 @@ class Schema {
  public:
   using Type = std::remove_cvref_t<T>;
 
-  Schema(const parsing::schema::Type& _internal_schema)
+  Schema(const parsing::schema::Definition& _internal_schema)
       : impl_(Ref<SchemaImpl>::make(_internal_schema)) {}
 
   /// The string used to create this schema.

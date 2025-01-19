@@ -5,6 +5,7 @@
 #include <string>
 
 #include "../Result.hpp"
+#include "../parsing/schema/Definition.hpp"
 #include "schema/FlatbufTypes.hpp"
 #include "schema/Type.hpp"
 
@@ -12,7 +13,7 @@ namespace rfl::flatbuf {
 
 class SchemaImpl {
  public:
-  SchemaImpl(const parsing::schema::Type& _internal_schema);
+  SchemaImpl(const parsing::schema::Definition& _internal_schema);
 
   ~SchemaImpl() = default;
 
