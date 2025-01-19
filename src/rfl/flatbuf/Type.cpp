@@ -109,17 +109,21 @@ std::ostream& operator<<(std::ostream& _os, const Type::Enum& _e) {
              << internal::strings::join(", ", _e.fields) << " }" << std::endl;
 }
 
-std::ostream& operator<<(std::ostream& _os, const Type::List& _l) {
-  return _os << "[" << *_l.type << "]";
+std::ostream& operator<<(std::ostream& _os, const Type::Vector& _v) {
+  return _os << "[" << *_v.type << "]";
 }
 
 std::ostream& operator<<(std::ostream& _os, const Type::Map& _m) {
   return _os << "TODO(" << *_m.type << ")";
 }
 
+std::ostream& operator<<(std::ostream& _os, const Type::Optional& _o) {
+  return _os << "TODO(" << *_o.type << ")";
+}
+
 std::ostream& operator<<(std::ostream& _os, const Type::Table& _t) {
   _os << "table " << _t.name << " {" << std::endl;
-  for (const auto& f : fields) {
+  for (const auto& f : _t.fields) {
     _os << " " << f.name << ":" << f.type << ";" << std::endl;
   }
   return _os << "}" << std::endl;

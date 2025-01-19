@@ -1,7 +1,7 @@
 #ifndef RFL_FLATBUF_SCHEMA_TYPE_HPP_
 #define RFL_FLATBUF_SCHEMA_TYPE_HPP_
 
-#include <flatbuffers.h>
+#include <flatbuffers/flatbuffers.h>
 
 #include <iostream>
 #include <map>
@@ -69,8 +69,8 @@ struct Type {
   struct Table {
     struct Field {
       std::string name;
-      Type type;
-      std::uoffset_t offset;
+      rfl::Ref<Type> type;
+      flatbuffers::uoffset_t offset;
     };
     std::string name;
     std::vector<Field> fields;

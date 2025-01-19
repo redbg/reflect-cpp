@@ -28,6 +28,10 @@ SOFTWARE.
 
 #include <sstream>
 
+#include "rfl/flatbuf/is_named_type.hpp"
+#include "rfl/parsing/schema/Definition.hpp"
+#include "rfl/parsing/schemaful/tuple_to_object.hpp"
+
 namespace rfl::flatbuf::schema {
 
 Type type_to_flatbuf_schema_type(
@@ -39,7 +43,9 @@ Type any_of_to_flatbuf_schema_type(
     const parsing::schema::Type::AnyOf& _any_of,
     const std::map<std::string, parsing::schema::Type>& _definitions,
     const bool _is_top_level, FlatbufTypes* _flatbuf_types) {
-  auto value = Type::Union{};
+  auto value =
+      Type::Union{.name = std::string("Union") +
+                          std::to_string(_flatbuf_types->unions_.size() + 1)};
   size_t i = 1;
   for (const auto& type : _any_of.types_) {
     value.fields.push_back(
@@ -47,13 +53,11 @@ Type any_of_to_flatbuf_schema_type(
                        type_to_flatbuf_schema_type(type, _definitions, false,
                                                    _flatbuf_types)));
   }
-  value.name =
-      std::string("Union") + std::to_string(_flatbuf_types->unions_.size() + 1);
   if (_is_top_level) {
     return Type{.value = value};
   } else {
     _flatbuf_types->unions_[value.name] = Type{.value = value};
-    return Type{.value = schema::Type::Reference{name}};
+    return Type{.value = schema::Type::Reference{value.name}};
   }
 }
 
@@ -89,18 +93,20 @@ Type object_to_flatbuf_schema_type(
     const parsing::schema::Type::Object& _obj,
     const std::map<std::string, parsing::schema::Type>& _definitions,
     const bool _is_top_level, FlatbufTypes* _flatbuf_types) {
-  Type::Struct struct_schema;
+  Type::Table table_schema;
   for (const auto& [k, v] : _obj.types_) {
-    struct_schema.fields.push_back(std::make_pair(
-        k,
-        type_to_flatbuf_schema_type(v, _definitions, false, _flatbuf_types)));
+    table_schema.fields.push_back(Type::Table::Field{
+        .name = k,
+        .type = rfl::Ref<Type>::make(type_to_flatbuf_schema_type(
+            v, _definitions, false, _flatbuf_types)),
+        .offset = 0 /* TODO*/});
   }
   if (_is_top_level) {
-    return Type{.value = struct_schema};
+    return Type{.value = table_schema};
   } else {
     const auto name = std::string("Tuple") +
                       std::to_string(_flatbuf_types->tuples_.size() + 1);
-    _flatbuf_types->tuples_[name] = Type{.value = struct_schema};
+    _flatbuf_types->tuples_[name] = Type{.value = table_schema};
     return Type{.value = Type::Reference{name}};
   }
 }
@@ -139,6 +145,7 @@ Type type_to_flatbuf_schema_type(
 
     } else if constexpr (std::is_same<T, Type::Bytestring>()) {
       // TODO: Implement
+      return schema::Type{.value = schema::Type::String{}};
 
     } else if constexpr (std::is_same<T, Type::Int32>() ||
                          std::is_same<T, Type::Integer>()) {
@@ -193,7 +200,6 @@ Type type_to_flatbuf_schema_type(
                                               _flatbuf_types);
 
     } else if constexpr (std::is_same<T, Type::StringMap>()) {
-      _flatbuf_types->has_maps_ = true;
       return schema::Type{
           .value = schema::Type::Map{
               .type = Ref<schema::Type>::make(type_to_flatbuf_schema_type(
@@ -219,12 +225,6 @@ Type type_to_flatbuf_schema_type(
       static_assert(rfl::always_false_v<T>, "Not all cases were covered.");
     }
   });
-}
-
-std::string SchemaImpl::str() const {
-  std::stringstream stream;
-  stream << schema_;
-  return stream.str();
 }
 
 }  // namespace rfl::flatbuf::schema

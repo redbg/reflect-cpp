@@ -34,7 +34,7 @@ SOFTWARE.
 namespace rfl::flatbuf {
 
 SchemaImpl::SchemaImpl(const parsing::schema::Type& _internal_schema)
-    : schema_(internal_schema_to_flatbuf_schema(_internal_schema)) {}
+    : schema_(schema::internal_schema_to_flatbuf_schema(_internal_schema)) {}
 
 std::string SchemaImpl::str() const {
   std::stringstream stream;

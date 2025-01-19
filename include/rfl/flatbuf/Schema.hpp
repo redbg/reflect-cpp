@@ -7,6 +7,7 @@
 
 #include "../Ref.hpp"
 #include "SchemaImpl.hpp"
+#include "schema/FlatbufTypes.hpp"
 
 namespace rfl::flatbuf {
 
@@ -22,7 +23,7 @@ class Schema {
   std::string str() const { return impl_->str(); }
 
   /// The struct schema used to generate new values.
-  const schema::Type& value() const { return impl_->value(); };
+  const schema::FlatbufTypes& value() const { return impl_->value(); };
 
  private:
   /// We are using the "pimpl"-pattern

@@ -1,9 +1,9 @@
-#ifndef RFL_CAPNPROTO_IS_NAMED_TYPE_HPP_
-#define RFL_CAPNPROTO_IS_NAMED_TYPE_HPP_
+#ifndef RFL_FLATBUF_IS_NAMED_TYPE_HPP_
+#define RFL_FLATBUF_IS_NAMED_TYPE_HPP_
 
 #include "../parsing/schema/Type.hpp"
 
-namespace rfl::capnproto {
+namespace rfl::flatbuf {
 
 inline bool is_named_type(const parsing::schema::Type& _type) {
   return _type.variant_.visit([&](const auto& _v) -> bool {
@@ -15,7 +15,7 @@ inline bool is_named_type(const parsing::schema::Type& _type) {
   });
 }
 
-}  // namespace rfl::capnproto
+}  // namespace rfl::flatbuf
 
 #endif
 

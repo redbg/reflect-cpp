@@ -5,8 +5,8 @@
 #include <string>
 
 #include "../Result.hpp"
-#include "../schema/Type.hpp"
 #include "schema/FlatbufTypes.hpp"
+#include "schema/Type.hpp"
 
 namespace rfl::flatbuf {
 
@@ -20,7 +20,7 @@ class SchemaImpl {
   std::string str() const;
 
   /// The interface used to create new values.
-  const schema::Type& value() const { return schema_; };
+  const schema::FlatbufTypes& value() const { return schema_; };
 
  private:
   /// The flatbuffers schema.
