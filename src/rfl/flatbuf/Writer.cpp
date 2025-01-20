@@ -4,18 +4,18 @@
 
 #include "rfl/parsing/schemaful/IsSchemafulWriter.hpp"
 
-namespace rfl::capnproto {
+namespace rfl::flatbuf {
 
 static_assert(parsing::schemaful::IsSchemafulWriter<Writer>,
               "This must be a schemaful writer.");
 
-Writer::Writer(capnp::DynamicStruct::Builder* _root) : root_(_root){};
+Writer::Writer(const Ref<flatbuffers::FlatBufferBuilder>& _fbb) : fbb_(_fbb){};
 
 Writer::~Writer() = default;
 
 Writer::OutputObjectType Writer::object_as_root(
     const size_t _size) const noexcept {
-  return OutputObjectType{root_->as<capnp::DynamicStruct>()};
+  return OutputObjectType{/* TODO */};
 }
 
 Writer::OutputArrayType Writer::add_array_to_array(
@@ -76,9 +76,7 @@ Writer::OutputUnionType Writer::add_union_to_union(
     const size_t _index, OutputUnionType* _parent) const noexcept {}
 
 Writer::OutputVarType Writer::add_null_to_array(
-    OutputArrayType* _parent) const noexcept {
-  _parent->val_.set(_parent->ix_++, capnp::VOID);
-}
+    OutputArrayType* _parent) const noexcept {}
 
 Writer::OutputVarType Writer::add_null_to_map(
     const std::string_view& _name, OutputMapType* _parent) const noexcept {}
@@ -89,4 +87,4 @@ Writer::OutputVarType Writer::add_null_to_object(
 Writer::OutputVarType Writer::add_null_to_union(
     const size_t _index, OutputUnionType* _parent) const noexcept {}
 
-}  // namespace rfl::capnproto
+}  // namespace rfl::flatbuf

@@ -31,7 +31,7 @@ SOFTWARE.
 
 #include "rfl/flatbuf/Reader.cpp"
 #include "rfl/flatbuf/SchemaImpl.cpp"
-// #include "rfl/flatbuf/Writer.cpp"
 #include "rfl/flatbuf/Type.cpp"
+#include "rfl/flatbuf/Writer.cpp"
 #include "rfl/flatbuf/schema/FlatbufTypes.cpp"
 #include "rfl/flatbuf/schema/internal_schema_to_flatbuf_schema.cpp"
