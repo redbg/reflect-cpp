@@ -24,6 +24,7 @@
 #include "../internal/is_literal.hpp"
 #include "../internal/ptr_cast.hpp"
 #include "calc_vtable_offset.hpp"
+#include "schema/FlatbufTypes.hpp"
 #include "schema/Type.hpp"
 
 namespace rfl::flatbuf {
@@ -61,7 +62,8 @@ class Writer {
   using OutputUnionType = FlatbufOutputUnion;
   using OutputVarType = FlatbufOutputVar;
 
-  Writer(const Ref<flatbuffers::FlatBufferBuilder>& _fbb);
+  Writer(const Ref<flatbuffers::FlatBufferBuilder>& _fbb,
+         const Ref<schema::FlatbufTypes>& _schema);
 
   ~Writer();
 
@@ -244,6 +246,8 @@ class Writer {
 
  private:
   Ref<flatbuffers::FlatBufferBuilder> fbb_;
+
+  Ref<schema::FlatbufTypes> schema_;
 };
 
 }  // namespace rfl::flatbuf

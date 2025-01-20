@@ -9,7 +9,9 @@ namespace rfl::flatbuf {
 static_assert(parsing::schemaful::IsSchemafulWriter<Writer>,
               "This must be a schemaful writer.");
 
-Writer::Writer(const Ref<flatbuffers::FlatBufferBuilder>& _fbb) : fbb_(_fbb){};
+Writer::Writer(const Ref<flatbuffers::FlatBufferBuilder>& _fbb,
+               const Ref<schema::FlatbufTypes>& _schema)
+    : fbb_(_fbb), schema_(_schema){};
 
 Writer::~Writer() = default;
 
