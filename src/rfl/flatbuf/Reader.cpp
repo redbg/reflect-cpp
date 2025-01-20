@@ -1,8 +1,8 @@
-#include "rfl/capnproto/Reader.hpp"
+#include "rfl/flatbuf/Reader.hpp"
 
 #include "rfl/parsing/schemaful/IsSchemafulReader.hpp"
 
-namespace rfl::capnproto {
+namespace rfl::flatbuf {
 
 static_assert(parsing::schemaful::IsSchemafulReader<Reader>,
               "This must be a schemaful reader.");
@@ -39,4 +39,4 @@ rfl::Result<Reader::InputUnionType> Reader::to_union(
   // TODO
 }
 
-}  // namespace rfl::capnproto
+}  // namespace rfl::flatbuf

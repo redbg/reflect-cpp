@@ -29,12 +29,6 @@ SOFTWARE.
 // Also, this speeds up compile time, compared to multiple separate .cpp files
 // compilation.
 
-/*
-#include "rfl/avro/Reader.cpp"
-#include "rfl/avro/SchemaImpl.cpp"
-#include "rfl/avro/Type.cpp"
-#include "rfl/avro/Writer.cpp"
-#include "rfl/avro/to_schema.cpp"*/
 #include "rfl/capnproto/Reader.cpp"
 #include "rfl/capnproto/SchemaImpl.cpp"
 #include "rfl/capnproto/Type.cpp"

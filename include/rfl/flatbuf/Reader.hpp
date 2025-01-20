@@ -127,9 +127,13 @@ class Reader {
                                    const InputObjectType& _obj) const noexcept {
     constexpr size_t size = ObjectReader::size();
     for (size_t i = 0; i < size; ++i) {
-      _object_reader.read(
+      const auto err = _object_reader.read(
           i, InputVarType{_obj.val_->GetAddressOf(calc_vtable_offset(i))});
+      if (err) {
+        return err;
+      }
     }
+    return std::nullopt;
   }
 
   template <class VariantType, class UnionReaderType>
