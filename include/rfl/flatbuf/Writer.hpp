@@ -31,25 +31,25 @@ namespace rfl::flatbuf {
 class Writer {
  public:
   struct FlatbufOutputArray {
-    schema::Type::Vector* schema_;
+    schema::Type::Vector schema_;
     flatbuffers::uoffset_t offset_ = 0;
     size_t ix_ = 0;
   };
 
   struct FlatbufOutputMap {
-    schema::Type::Map* schema_;
+    schema::Type::Map schema_;
     flatbuffers::uoffset_t offset_ = 0;
     size_t ix_ = 0;
   };
 
   struct FlatbufOutputObject {
-    schema::Type::Table* schema_;
+    schema::Type::Table schema_;
     flatbuffers::uoffset_t offset_ = 0;
     size_t ix_ = 0;
   };
 
   struct FlatbufOutputUnion {
-    schema::Type::Table* schema_;
+    schema::Type::Table schema_;
     flatbuffers::uoffset_t offset_ = 0;
   };
 
