@@ -81,7 +81,7 @@ class Writer {
     throw std::runtime_error("Unsupported.");
   }
 
-  Writer::OutputObjectType object_as_root(const size_t _size) const noexcept;
+  Writer::OutputObjectType object_as_root(const size_t _size) const;
 
   template <class T = int>
   OutputVarType null_as_root() const noexcept {
@@ -113,7 +113,7 @@ class Writer {
 
   OutputArrayType add_array_to_object(const std::string_view& _name,
                                       const size_t _size,
-                                      OutputObjectType* _parent) const noexcept;
+                                      OutputObjectType* _parent) const;
 
   OutputArrayType add_array_to_union(const size_t _index, const size_t _size,
                                      OutputUnionType* _parent) const noexcept;
@@ -243,6 +243,10 @@ class Writer {
   void end_map(OutputMapType* _obj) const noexcept {}
 
   void end_object(OutputObjectType* _obj) const noexcept {}
+
+ private:
+  /// Starts a new typed vector.
+  void start_vector(const schema::Type& _type, const size_t _size) const;
 
  private:
   Ref<flatbuffers::FlatBufferBuilder> fbb_;
