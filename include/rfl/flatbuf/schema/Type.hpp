@@ -62,6 +62,7 @@ struct Type {
 
   struct Reference {
     std::string type_name;
+    const Type* type_ptr = nullptr;
   };
 
   struct Table {

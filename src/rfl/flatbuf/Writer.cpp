@@ -10,7 +10,7 @@ static_assert(parsing::schemaful::IsSchemafulWriter<Writer>,
               "This must be a schemaful writer.");
 
 Writer::Writer(const Ref<flatbuffers::FlatBufferBuilder>& _fbb,
-               const Ref<schema::FlatbufTypes>& _schema)
+               const Ref<schema::FlatbufSchema>& _schema)
     : fbb_(_fbb), schema_(_schema){};
 
 Writer::~Writer() = default;

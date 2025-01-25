@@ -28,7 +28,7 @@ SOFTWARE.
 
 #include <sstream>
 
-#include "rfl/flatbuf/schema/FlatbufTypes.hpp"
+#include "rfl/flatbuf/schema/FlatbufSchema.hpp"
 #include "rfl/flatbuf/schema/internal_schema_to_flatbuf_schema.hpp"
 
 namespace rfl::flatbuf {

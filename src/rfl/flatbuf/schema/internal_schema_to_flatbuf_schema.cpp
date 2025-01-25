@@ -27,6 +27,8 @@ SOFTWARE.
 #include "rfl/flatbuf/schema/internal_schema_to_flatbuf_schema.hpp"
 
 #include <sstream>
+#include <stdexcept>
+#include <type_traits>
 
 #include "rfl/flatbuf/is_named_type.hpp"
 #include "rfl/parsing/schema/Definition.hpp"
@@ -37,42 +39,44 @@ namespace rfl::flatbuf::schema {
 Type type_to_flatbuf_schema_type(
     const parsing::schema::Type& _type,
     const std::map<std::string, parsing::schema::Type>& _definitions,
-    const bool _is_top_level, FlatbufTypes* _flatbuf_types);
+    const bool _is_top_level, FlatbufSchema* _flatbuf_schema);
 
 Type any_of_to_flatbuf_schema_type(
     const parsing::schema::Type::AnyOf& _any_of,
     const std::map<std::string, parsing::schema::Type>& _definitions,
-    const bool _is_top_level, FlatbufTypes* _flatbuf_types) {
+    const bool _is_top_level, FlatbufSchema* _flatbuf_schema) {
   auto value =
       Type::Union{.name = std::string("Union") +
-                          std::to_string(_flatbuf_types->unions_.size() + 1)};
+                          std::to_string(_flatbuf_schema->unions_->size() + 1)};
   size_t i = 1;
   for (const auto& type : _any_of.types_) {
     value.fields.push_back(
         std::make_pair(std::string("Opt" + std::to_string(i++)),
                        type_to_flatbuf_schema_type(type, _definitions, false,
-                                                   _flatbuf_types)));
+                                                   _flatbuf_schema)));
   }
   if (_is_top_level) {
     return Type{.value = value};
   } else {
-    _flatbuf_types->unions_[value.name] = Type{.value = value};
-    return Type{.value = schema::Type::Reference{value.name}};
+    const auto type = Type{value};
+    (*_flatbuf_schema->unions_)[value.name] = type;
+    return Type{.value = schema::Type::Reference{.type_name = value.name}};
   }
 }
 
 Type literal_to_flatbuf_schema_type(
     const parsing::schema::Type::Literal& _literal,
     const std::map<std::string, parsing::schema::Type>& _definitions,
-    const bool _is_top_level, FlatbufTypes* _flatbuf_types) {
+    const bool _is_top_level, FlatbufSchema* _flatbuf_schema) {
   const auto enum_schema = Type::Enum{.fields = _literal.values_};
   if (_is_top_level) {
     return Type{.value = enum_schema};
   } else {
-    const auto name =
-        std::string("Enum") + std::to_string(_flatbuf_types->enums_.size() + 1);
-    _flatbuf_types->enums_[name] = Type{.value = enum_schema};
-    return Type{.value = schema::Type::Reference{name}};
+    const auto name = std::string("Enum") +
+                      std::to_string(_flatbuf_schema->enums_->size() + 1);
+    const auto type = Type{enum_schema};
+    (*_flatbuf_schema->enums_)[name] = type;
+    return Type{.value = schema::Type::Reference{.type_name = name}};
   }
 }
 
@@ -87,66 +91,68 @@ Type::Reference make_root_type(const parsing::schema::Type& _t) {
   });
 }
 
-FlatbufTypes internal_schema_to_flatbuf_schema(
+Result<FlatbufSchema> internal_schema_to_flatbuf_schema(
     const parsing::schema::Definition& _internal_schema) {
-  FlatbufTypes flatbuf_types{.root_type_ =
-                                 make_root_type(_internal_schema.root_)};
+  FlatbufSchema flatbuf_schema{.root_type_ =
+                                   make_root_type(_internal_schema.root_)};
   for (const auto& [name, def] : _internal_schema.definitions_) {
     if (!is_named_type(def)) {
       continue;
     }
-    flatbuf_types.structs_[name] = type_to_flatbuf_schema_type(
-        def, _internal_schema.definitions_, true, &flatbuf_types);
+    (*flatbuf_schema.structs_)[name] = type_to_flatbuf_schema_type(
+        def, _internal_schema.definitions_, true, &flatbuf_schema);
   }
-  return flatbuf_types;
+  return flatbuf_schema.set_reference_ptrs();
 }
 
 Type object_to_flatbuf_schema_type(
     const parsing::schema::Type::Object& _obj,
     const std::map<std::string, parsing::schema::Type>& _definitions,
-    const bool _is_top_level, FlatbufTypes* _flatbuf_types) {
+    const bool _is_top_level, FlatbufSchema* _flatbuf_schema) {
   Type::Table table_schema;
   for (const auto& [k, v] : _obj.types_) {
     table_schema.fields.push_back(std::make_pair(
         k,
-        type_to_flatbuf_schema_type(v, _definitions, false, _flatbuf_types)));
+        type_to_flatbuf_schema_type(v, _definitions, false, _flatbuf_schema)));
   }
   if (_is_top_level) {
     return Type{.value = table_schema};
   } else {
+    const auto type = Type{table_schema};
     const auto name = std::string("Tuple") +
-                      std::to_string(_flatbuf_types->tuples_.size() + 1);
-    _flatbuf_types->tuples_[name] = Type{.value = table_schema};
-    return Type{.value = Type::Reference{name}};
+                      std::to_string(_flatbuf_schema->tuples_->size() + 1);
+    (*_flatbuf_schema->tuples_)[name] = type;
+    return Type{.value = Type::Reference{.type_name = name}};
   }
 }
 
 Type optional_to_flatbuf_schema_type(
     const parsing::schema::Type::Optional& _optional,
     const std::map<std::string, parsing::schema::Type>& _definitions,
-    const bool _is_top_level, FlatbufTypes* _flatbuf_types) {
-  return Type{.value = Type::Optional{
-                  .type = make_ref<Type>(type_to_flatbuf_schema_type(
-                      *_optional.type_, _definitions, false, _flatbuf_types))}};
+    const bool _is_top_level, FlatbufSchema* _flatbuf_schema) {
+  return Type{
+      .value = Type::Optional{
+          .type = make_ref<Type>(type_to_flatbuf_schema_type(
+              *_optional.type_, _definitions, false, _flatbuf_schema))}};
 }
 
 Type reference_to_flatbuf_schema_type(
     const parsing::schema::Type::Reference& _reference,
     const std::map<std::string, parsing::schema::Type>& _definitions,
-    const bool _is_top_level, FlatbufTypes* _flatbuf_types) {
+    const bool _is_top_level, FlatbufSchema* _flatbuf_schema) {
   const auto it = _definitions.find(_reference.name_);
   if (it == _definitions.end() || is_named_type(it->second)) {
     return Type{.value = Type::Reference{.type_name = _reference.name_}};
   } else {
     return type_to_flatbuf_schema_type(it->second, _definitions, _is_top_level,
-                                       _flatbuf_types);
+                                       _flatbuf_schema);
   }
 }
 
 Type type_to_flatbuf_schema_type(
     const parsing::schema::Type& _type,
     const std::map<std::string, parsing::schema::Type>& _definitions,
-    const bool _is_top_level, FlatbufTypes* _flatbuf_types) {
+    const bool _is_top_level, FlatbufSchema* _flatbuf_schema) {
   return _type.variant_.visit([&](const auto& _t) -> schema::Type {
     using T = std::remove_cvref_t<decltype(_t)>;
     using Type = parsing::schema::Type;
@@ -181,55 +187,55 @@ Type type_to_flatbuf_schema_type(
 
     } else if constexpr (std::is_same<T, Type::AnyOf>()) {
       return any_of_to_flatbuf_schema_type(_t, _definitions, _is_top_level,
-                                           _flatbuf_types);
+                                           _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::Description>()) {
       return type_to_flatbuf_schema_type(*_t.type_, _definitions, _is_top_level,
-                                         _flatbuf_types);
+                                         _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::FixedSizeTypedArray>()) {
       return schema::Type{
           .value = schema::Type::Vector{
               .type = Ref<schema::Type>::make(type_to_flatbuf_schema_type(
-                  *_t.type_, _definitions, false, _flatbuf_types))}};
+                  *_t.type_, _definitions, false, _flatbuf_schema))}};
 
     } else if constexpr (std::is_same<T, Type::Literal>()) {
       return literal_to_flatbuf_schema_type(_t, _definitions, _is_top_level,
-                                            _flatbuf_types);
+                                            _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::Object>()) {
       return object_to_flatbuf_schema_type(_t, _definitions, _is_top_level,
-                                           _flatbuf_types);
+                                           _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::Optional>()) {
       return optional_to_flatbuf_schema_type(_t, _definitions, _is_top_level,
-                                             _flatbuf_types);
+                                             _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::Reference>()) {
       return reference_to_flatbuf_schema_type(_t, _definitions, _is_top_level,
-                                              _flatbuf_types);
+                                              _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::StringMap>()) {
       return schema::Type{
           .value = schema::Type::Map{
               .type = Ref<schema::Type>::make(type_to_flatbuf_schema_type(
-                  *_t.value_type_, _definitions, false, _flatbuf_types))}};
+                  *_t.value_type_, _definitions, false, _flatbuf_schema))}};
 
     } else if constexpr (std::is_same<T, Type::Tuple>()) {
       return type_to_flatbuf_schema_type(
           Type{parsing::schemaful::tuple_to_object(_t)}, _definitions, false,
-          _flatbuf_types);
+          _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::TypedArray>()) {
       return schema::Type{
           .value = schema::Type::Vector{
               .type = Ref<schema::Type>::make(type_to_flatbuf_schema_type(
-                  *_t.type_, _definitions, false, _flatbuf_types))}};
+                  *_t.type_, _definitions, false, _flatbuf_schema))}};
 
     } else if constexpr (std::is_same<T, Type::Validated>()) {
       // Flatbuffers knows no validation.
       return type_to_flatbuf_schema_type(*_t.type_, _definitions, _is_top_level,
-                                         _flatbuf_types);
+                                         _flatbuf_schema);
 
     } else {
       static_assert(rfl::always_false_v<T>, "Not all cases were covered.");
