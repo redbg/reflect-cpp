@@ -39,8 +39,8 @@ std::ostream& operator<<(std::ostream& _os,
 
 std::ostream& operator<<(std::ostream& _os,
                          const FlatbufSchema& _flatbuf_schema) {
-  _os << _flatbuf_schema.structs_ << _flatbuf_schema.enums_
-      << _flatbuf_schema.tuples_ << _flatbuf_schema.unions_ << "root_type "
+  _os << *_flatbuf_schema.structs_ << *_flatbuf_schema.enums_
+      << *_flatbuf_schema.tuples_ << *_flatbuf_schema.unions_ << "root_type "
       << _flatbuf_schema.root_type_ << ";";
   return _os;
 }

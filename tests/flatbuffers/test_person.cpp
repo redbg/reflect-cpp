@@ -17,6 +17,6 @@ struct Person {
 };
 
 TEST(flatbuffers, test_person) {
-  std::cout << rfl::flatbuf::to_schema<Person>().str() << std::endl;
+  std::cout << rfl::flatbuf::to_schema<Person>().value() << std::endl;
 }
 }  // namespace test_tutorial_example
