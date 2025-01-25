@@ -29,6 +29,7 @@ SOFTWARE.
 // Also, this speeds up compile time, compared to multiple separate .cpp files
 // compilation.
 
+#include "rfl/flatbuf/FlatbufOutputArray.cpp"
 #include "rfl/flatbuf/Reader.cpp"
 #include "rfl/flatbuf/SchemaImpl.cpp"
 #include "rfl/flatbuf/Type.cpp"

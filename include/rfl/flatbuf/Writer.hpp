@@ -23,6 +23,8 @@
 #include "../always_false.hpp"
 #include "../internal/is_literal.hpp"
 #include "../internal/ptr_cast.hpp"
+#include "FlatbufOutputArray.hpp"
+#include "FlatbufOutputObject.hpp"
 #include "calc_vtable_offset.hpp"
 #include "schema/FlatbufSchema.hpp"
 #include "schema/Type.hpp"
@@ -31,28 +33,11 @@ namespace rfl::flatbuf {
 
 class Writer {
  public:
-  struct FlatbufOutputArray {
-    schema::Type::Vector schema_;
-    flatbuffers::uoffset_t offset_ = 0;
-    size_t ix_ = 0;
-  };
+  // TODO
+  struct FlatbufOutputMap {};
 
-  struct FlatbufOutputMap {
-    schema::Type::Map schema_;
-    flatbuffers::uoffset_t offset_ = 0;
-    size_t ix_ = 0;
-  };
-
-  struct FlatbufOutputObject {
-    schema::Type::Table schema_;
-    flatbuffers::uoffset_t offset_ = 0;
-    size_t ix_ = 0;
-  };
-
-  struct FlatbufOutputUnion {
-    schema::Type::Table schema_;
-    flatbuffers::uoffset_t offset_ = 0;
-  };
+  // TODO
+  struct FlatbufOutputUnion {};
 
   struct FlatbufOutputVar {};
 
@@ -171,7 +156,7 @@ class Writer {
   template <class T>
   OutputVarType add_value_to_array(const T& _var,
                                    OutputArrayType* _parent) const noexcept {
-    // TODO
+    return add_value(_var, _parent);
   }
 
   template <class T>
@@ -184,9 +169,28 @@ class Writer {
   OutputVarType add_value_to_object(const std::string_view& _name,
                                     const T& _var,
                                     OutputObjectType* _parent) const noexcept {
+    return add_value(_var, _parent);
+  }
+
+  template <class T>
+  OutputVarType add_value_to_union(const size_t _index, const T& _var,
+                                   OutputUnionType* _parent) const noexcept {
+    return OutputVarType{};
+  }
+
+  void end_array(OutputArrayType* _arr) const noexcept { _arr->end(); }
+
+  void end_map(OutputMapType* _obj) const noexcept {}
+
+  void end_object(OutputObjectType* _obj) const noexcept { _obj->end(); }
+
+ private:
+  /// Adds a new value to the parent.
+  template <class T, class ParentType>
+  OutputVarType add_value(const T& _var, ParentType* _parent) const noexcept {
     if constexpr (std::is_same<std::remove_cvref_t<T>, std::string>()) {
       const auto str = fbb_->CreateString(_var.c_str(), _var.size());
-      fbb_->AddOffset(calc_vtable_offset(_parent->ix_++), str);
+      _parent->add_offset(str.o);
 
       // TODO
       // } else if constexpr (std::is_same<std::remove_cvref_t<T>,
@@ -195,7 +199,7 @@ class Writer {
     } else if constexpr (std::is_floating_point<std::remove_cvref_t<T>>() ||
                          std::is_same<std::remove_cvref_t<T>, bool>() ||
                          std::is_integral<std::remove_cvref_t<T>>()) {
-      fbb_->AddElement<T>(calc_vtable_offset(_parent->ix_++), _var);
+      _parent->add_scalar(_var);
 
       // TODO
       //} else if constexpr (internal::is_literal_v<T>) {
@@ -207,44 +211,6 @@ class Writer {
     return OutputVarType{};
   }
 
-  template <class T>
-  OutputVarType add_value_to_union(const size_t _index, const T& _var,
-                                   OutputUnionType* _parent) const noexcept {
-    // TODO
-    /*const auto field = _parent->val_.getSchema().getFields()[_index];
-
-  if constexpr (std::is_same<std::remove_cvref_t<T>, std::string>()) {
-    _parent->val_.set(field, _var.c_str());
-
-  } else if constexpr (std::is_same<std::remove_cvref_t<T>,
-                                    rfl::Bytestring>()) {
-    const auto array_ptr = kj::ArrayPtr<const kj::byte>(
-        internal::ptr_cast<const unsigned char*>(_var.data()), _var.size());
-    _parent->val_.set(field, capnp::Data::Reader(array_ptr));
-
-  } else if constexpr (std::is_floating_point<std::remove_cvref_t<T>>() ||
-                       std::is_same<std::remove_cvref_t<T>, bool>()) {
-    _parent->val_.set(field, _var);
-
-  } else if constexpr (std::is_integral<std::remove_cvref_t<T>>()) {
-    _parent->val_.set(field, static_cast<std::int64_t>(_var));
-
-  } else if constexpr (internal::is_literal_v<T>) {
-    return add_value_to_union(_index, _var.value(), _parent);
-
-  } else {
-    static_assert(rfl::always_false_v<T>, "Unsupported type.");
-  }*/
-    return OutputVarType{};
-  }
-
-  void end_array(OutputArrayType* _arr) const noexcept {}
-
-  void end_map(OutputMapType* _obj) const noexcept {}
-
-  void end_object(OutputObjectType* _obj) const noexcept {}
-
- private:
   /// Starts a new typed vector.
   void start_vector(const schema::Type& _type, const size_t _size) const;
 
