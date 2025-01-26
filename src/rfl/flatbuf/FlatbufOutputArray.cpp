@@ -71,16 +71,12 @@ flatbuffers::uoffset_t FlatbufOutputArray::build_vector(
           throw std::runtime_error("TODO");  // TODO
 
         } else if constexpr (std::is_same<U, schema::Type::Map>()) {
-          /// The type of the offset does not matter...it is not used in any way
-          /// by CreateVector.
           return do_create(TypeWrapper<flatbuffers::Offset<>>{});
 
         } else if constexpr (std::is_same<U, schema::Type::Optional>()) {
           throw std::runtime_error("TODO");  // TODO
 
         } else if constexpr (std::is_same<U, schema::Type::Vector>()) {
-          /// The type of the offset does not matter...it is not used in any way
-          /// by CreateVector.
           return do_create(TypeWrapper<flatbuffers::Offset<>>{});
 
         } else if constexpr (std::is_same<U, schema::Type::Reference>()) {
@@ -88,11 +84,9 @@ flatbuffers::uoffset_t FlatbufOutputArray::build_vector(
             throw std::runtime_error("type_ptr not set for '" + _t.type_name +
                                      "'.");
           }
-          build_vector(*_t.type_ptr);
+          return build_vector(*_t.type_ptr);
 
         } else if constexpr (std::is_same<U, schema::Type::Table>()) {
-          /// The type of the offset does not matter...it is not used in any way
-          /// by CreateVector.
           return do_create(TypeWrapper<flatbuffers::Offset<>>{});
 
         } else if constexpr (std::is_same<U, schema::Type::Union>()) {
