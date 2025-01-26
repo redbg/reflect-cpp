@@ -1,9 +1,7 @@
 #ifndef RFL_FLATBUF_READ_HPP_
 #define RFL_FLATBUF_READ_HPP_
 
-#include <capnp/dynamic.h>
-#include <capnp/serialize-packed.h>
-#include <kj/io.h>
+#include <flatbuffers/flatbuffers.h>
 
 #include <bit>
 #include <istream>
@@ -11,14 +9,10 @@
 #include <type_traits>
 
 #include "../Processors.hpp"
-#include "../SnakeCaseToCamelCase.hpp"
 #include "../internal/strings/strings.hpp"
 #include "../internal/wrap_in_rfl_array_t.hpp"
 #include "Parser.hpp"
 #include "Reader.hpp"
-#include "Schema.hpp"
-#include "get_root_name.hpp"
-#include "to_schema.hpp"
 
 namespace rfl::flatbuf {
 
@@ -36,22 +30,9 @@ auto read(const InputVarType& _obj) {
 template <class T, class... Ps>
 Result<internal::wrap_in_rfl_array_t<T>> read(const char* _bytes,
                                               const size_t _size) {
-  const auto array_ptr = kj::ArrayPtr<const kj::byte>(
-      internal::ptr_cast<const kj::byte*>(_bytes), _size);
-  auto input_stream = kj::ArrayInputStream(array_ptr);
-  auto message_reader = capnp::PackedMessageReader(input_stream);
-  const auto root_name = get_root_name<std::remove_cv_t<T>, Ps...>();
-  const auto root_schema = _schema.value().getNested(root_name.c_str());
-  const auto input_var = InputVarType{
-      message_reader.getRoot<capnp::DynamicStruct>(root_schema.asStruct())};
+  const auto input_var = InputVarType{flatbuffers::GetRoot<const uint8_t>(
+      internal::ptr_cast<const uint8_t*>(_bytes))};
   return read<T, Ps...>(input_var);
-}
-
-/// Parses an object from flatbuffers using reflection.
-template <class T, class... Ps>
-auto read(const char* _bytes, const size_t _size) {
-  const auto schema = to_schema<std::remove_cvref_t<T>, Ps...>();
-  return read<T, Ps...>(_bytes, _size, schema);
 }
 
 /// Parses an object from flatbuffers using reflection.

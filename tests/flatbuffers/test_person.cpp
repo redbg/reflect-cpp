@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-// #include "write_and_read.hpp"
+#include "write_and_read.hpp"
 
 namespace test_tutorial_example {
 
@@ -26,6 +26,6 @@ TEST(flatbuffers, test_person) {
       Person{.first_name = "Homer",
              .children = std::vector<Person>({bart, lisa, maggie})};
 
-  rfl::flatbuf::write(homer, std::cout) << std::endl << std::endl;
+  write_and_read(homer);
 }
 }  // namespace test_tutorial_example

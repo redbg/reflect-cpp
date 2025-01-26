@@ -7,7 +7,7 @@
 #include "flatbuf/Schema.hpp"
 #include "flatbuf/Writer.hpp"
 // #include "flatbuf/load.hpp"
-// #include "flatbuf/read.hpp"
+#include "flatbuf/read.hpp"
 // #include "flatbuf/save.hpp"
 #include "flatbuf/to_schema.hpp"
 #include "flatbuf/write.hpp"

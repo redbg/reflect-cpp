@@ -107,7 +107,7 @@ class Reader {
     const size_t size = static_cast<size_t>(_arr.val_->size()) / elem_size;
     for (size_t i = 0; i < size; ++i) {
       const auto err = _array_reader.read(
-          InputVarType{flatbuffers::GetAnyVectorElemAddressOf<const uint8_t*>(
+          InputVarType{flatbuffers::GetAnyVectorElemAddressOf<const uint8_t>(
               _arr.val_, i, elem_size)});
       if (err) {
         return err;
@@ -127,11 +127,8 @@ class Reader {
                                    const InputObjectType& _obj) const noexcept {
     constexpr size_t size = ObjectReader::size();
     for (size_t i = 0; i < size; ++i) {
-      const auto err = _object_reader.read(
+      _object_reader.read(
           i, InputVarType{_obj.val_->GetAddressOf(calc_vtable_offset(i))});
-      if (err) {
-        return err;
-      }
     }
     return std::nullopt;
   }
