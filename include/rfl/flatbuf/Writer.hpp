@@ -48,7 +48,7 @@ class Writer {
   using OutputVarType = FlatbufOutputVar;
 
   Writer(const Ref<flatbuffers::FlatBufferBuilder>& _fbb,
-         const Ref<schema::FlatbufSchema>& _schema);
+         const schema::FlatbufSchema& _schema);
 
   ~Writer();
 
@@ -217,7 +217,7 @@ class Writer {
  private:
   Ref<flatbuffers::FlatBufferBuilder> fbb_;
 
-  Ref<schema::FlatbufSchema> schema_;
+  schema::FlatbufSchema schema_;
 };
 
 }  // namespace rfl::flatbuf

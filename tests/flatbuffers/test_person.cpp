@@ -18,5 +18,14 @@ struct Person {
 
 TEST(flatbuffers, test_person) {
   std::cout << rfl::flatbuf::to_schema<Person>().value() << std::endl;
+
+  const auto bart = Person{.first_name = "Bart"};
+  const auto lisa = Person{.first_name = "Lisa"};
+  const auto maggie = Person{.first_name = "Maggie"};
+  const auto homer =
+      Person{.first_name = "Homer",
+             .children = std::vector<Person>({bart, lisa, maggie})};
+
+  rfl::flatbuf::write(homer, std::cout) << std::endl << std::endl;
 }
 }  // namespace test_tutorial_example

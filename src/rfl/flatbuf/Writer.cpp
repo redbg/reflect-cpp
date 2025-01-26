@@ -11,17 +11,17 @@ static_assert(parsing::schemaful::IsSchemafulWriter<Writer>,
               "This must be a schemaful writer.");
 
 Writer::Writer(const Ref<flatbuffers::FlatBufferBuilder>& _fbb,
-               const Ref<schema::FlatbufSchema>& _schema)
+               const schema::FlatbufSchema& _schema)
     : fbb_(_fbb), schema_(_schema){};
 
 Writer::~Writer() = default;
 
 Writer::OutputObjectType Writer::object_as_root(const size_t _size) const {
-  if (!schema_->root_type_.type_ptr) {
+  if (!schema_.root_type_.type_ptr) {
     throw std::runtime_error("Root type ptr not set.");
   }
   return OutputObjectType(
-      schema_->root_type_.type_ptr->convert_to<schema::Type::Table>(), nullptr,
+      schema_.root_type_.type_ptr->convert_to<schema::Type::Table>(), nullptr,
       fbb_.get());
 }
 

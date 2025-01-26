@@ -42,6 +42,8 @@ struct FlatbufOutputObject : public FlatbufOutputParent {
     auto offset = fbb_->EndTable(start_);
     if (parent_) {
       parent_->add_offset(offset);
+    } else {
+      fbb_->Finish(flatbuffers::Offset<>(offset));
     }
   }
 

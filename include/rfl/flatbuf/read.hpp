@@ -25,18 +25,17 @@ namespace rfl::flatbuf {
 using InputObjectType = typename Reader::InputObjectType;
 using InputVarType = typename Reader::InputVarType;
 
-/// Parses an object from a FLATBUF var.
+/// Parses an object from a flatbuffers var.
 template <class T, class... Ps>
 auto read(const InputVarType& _obj) {
   const auto r = Reader();
-  return Parser<T, Processors<SnakeCaseToCamelCase, Ps...>>::read(r, _obj);
+  return Parser<T, Processors<Ps...>>::read(r, _obj);
 }
 
-/// Parses an object from FLATBUF using reflection.
+/// Parses an object from flatbuffers using reflection.
 template <class T, class... Ps>
 Result<internal::wrap_in_rfl_array_t<T>> read(const char* _bytes,
-                                              const size_t _size,
-                                              const Schema<T>& _schema) {
+                                              const size_t _size) {
   const auto array_ptr = kj::ArrayPtr<const kj::byte>(
       internal::ptr_cast<const kj::byte*>(_bytes), _size);
   auto input_stream = kj::ArrayInputStream(array_ptr);
@@ -48,20 +47,14 @@ Result<internal::wrap_in_rfl_array_t<T>> read(const char* _bytes,
   return read<T, Ps...>(input_var);
 }
 
-/// Parses an object from FLATBUF using reflection.
+/// Parses an object from flatbuffers using reflection.
 template <class T, class... Ps>
 auto read(const char* _bytes, const size_t _size) {
   const auto schema = to_schema<std::remove_cvref_t<T>, Ps...>();
   return read<T, Ps...>(_bytes, _size, schema);
 }
 
-/// Parses an object from FLATBUF using reflection.
-template <class T, class... Ps>
-auto read(const std::vector<char>& _bytes, const Schema<T>& _schema) noexcept {
-  return read<T, Ps...>(_bytes.data(), _bytes.size(), _schema);
-}
-
-/// Parses an object from FLATBUF using reflection.
+/// Parses an object from flatbuffers using reflection.
 template <class T, class... Ps>
 auto read(const std::vector<char>& _bytes) {
   return read<T, Ps...>(_bytes.data(), _bytes.size());
