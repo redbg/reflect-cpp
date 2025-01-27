@@ -3,6 +3,7 @@
 
 #include <flatbuffers/flatbuffers.h>
 #include <flatbuffers/reflection.h>
+#include <flatbuffers/verifier.h>
 
 #include <cstddef>
 #include <exception>
@@ -49,6 +50,8 @@ class Reader {
   using InputUnionType = FlatbufInputUnion;
   using InputVarType = FlatbufInputVar;
 
+  Reader(const Ref<flatbuffers::Verifier>& _verifier);
+
   template <class T>
   static constexpr bool has_custom_constructor =
       (requires(InputVarType var) { T::from_flatbuf_obj(var); });
@@ -57,6 +60,7 @@ class Reader {
 
   template <class T>
   rfl::Result<T> to_basic_type(const InputVarType& _var) const noexcept {
+    std::cout << "to_basic_type1" << std::endl;
     if (!_var.val_) {
       return Error("Could not cast, was a nullptr.");
     }
@@ -125,11 +129,19 @@ class Reader {
   template <class ObjectReader>
   std::optional<Error> read_object(const ObjectReader& _object_reader,
                                    const InputObjectType& _obj) const noexcept {
+    if (!_obj.val_->VerifyTableStart(*verifier_)) {
+      return Error("Table start could not be verified.");
+    }
     constexpr size_t size = ObjectReader::size();
     for (size_t i = 0; i < size; ++i) {
-      _object_reader.read(
-          i, InputVarType{_obj.val_->GetAddressOf(calc_vtable_offset(i))});
+      const auto offset = calc_vtable_offset(i);
+      if (!_obj.val_->VerifyOffset(*verifier_, offset)) {
+        return Error("Offset for field " + std::to_string(i + 1) +
+                     " could not be verified.");
+      }
+      _object_reader.read(i, InputVarType{_obj.val_->GetAddressOf(offset)});
     }
+    verifier_->EndTable();
     return std::nullopt;
   }
 
@@ -153,6 +165,10 @@ class Reader {
   const uint8_t* apply_ptr_correction(const uint8_t* _ptr) const noexcept {
     return _ptr + flatbuffers::ReadScalar<flatbuffers::uoffset_t>(_ptr);
   }
+
+ private:
+  /// Used to verify the input stream.
+  Ref<flatbuffers::Verifier> verifier_;
 };
 
 }  // namespace rfl::flatbuf

@@ -52,21 +52,20 @@ struct Parser<flatbuf::Reader, flatbuf::Writer, Generic, ProcessorsType> {
   template <class T>
   static Result<Generic> read(const flatbuf::Reader&, const T&) noexcept {
     static_assert(always_false_v<T>,
-                  "Generics are unsupported in Cap'n Proto.");
+                  "Generics are unsupported in Flatbuffers.");
     return Error("Unsupported");
   }
 
   template <class P>
-  static void write(const flatbuf::Writer&, const Generic&,
-                    const P&) noexcept {
+  static void write(const flatbuf::Writer&, const Generic&, const P&) noexcept {
     static_assert(always_false_v<P>,
-                  "Generics are unsupported in Cap'n Proto.");
+                  "Generics are unsupported in Flatbuffers.");
   }
 
   template <class T>
   static schema::Type to_schema(T*) {
     static_assert(always_false_v<T>,
-                  "Generics are unsupported in Cap'n Proto.");
+                  "Generics are unsupported in Flatbuffers.");
     return schema::Type{};
   }
 };
@@ -86,7 +85,7 @@ struct Parser<flatbuf::Reader, flatbuf::Writer,
   static Result<internal::Skip<T, _skip_serialization, _skip_deserialization>>
   read(const R&, const U&) noexcept {
     static_assert(always_false_v<T>,
-                  "rfl::Skip is unsupported in Cap'n Proto.");
+                  "rfl::Skip is unsupported in Flatbuffers.");
     return Error("Unsupported");
   }
 
@@ -96,13 +95,13 @@ struct Parser<flatbuf::Reader, flatbuf::Writer,
                                          _skip_deserialization>& _skip,
                     const P& _parent) noexcept {
     static_assert(always_false_v<P>,
-                  "rfl::Skip is unsupported in Cap'n Proto.");
+                  "rfl::Skip is unsupported in Flatbuffers.");
   }
 
   template <class U>
   static schema::Type to_schema(U* _definitions) {
     static_assert(always_false_v<U>,
-                  "rfl::Skip is unsupported in Cap'n Proto.");
+                  "rfl::Skip is unsupported in Flatbuffers.");
     return schema::Type{};
   }
 };

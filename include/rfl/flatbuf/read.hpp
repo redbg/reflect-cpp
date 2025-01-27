@@ -2,6 +2,7 @@
 #define RFL_FLATBUF_READ_HPP_
 
 #include <flatbuffers/flatbuffers.h>
+#include <flatbuffers/verifier.h>
 
 #include <bit>
 #include <istream>
@@ -9,6 +10,7 @@
 #include <type_traits>
 
 #include "../Processors.hpp"
+#include "../Ref.hpp"
 #include "../internal/strings/strings.hpp"
 #include "../internal/wrap_in_rfl_array_t.hpp"
 #include "Parser.hpp"
@@ -19,20 +21,17 @@ namespace rfl::flatbuf {
 using InputObjectType = typename Reader::InputObjectType;
 using InputVarType = typename Reader::InputVarType;
 
-/// Parses an object from a flatbuffers var.
-template <class T, class... Ps>
-auto read(const InputVarType& _obj) {
-  const auto r = Reader();
-  return Parser<T, Processors<Ps...>>::read(r, _obj);
-}
-
 /// Parses an object from flatbuffers using reflection.
 template <class T, class... Ps>
 Result<internal::wrap_in_rfl_array_t<T>> read(const char* _bytes,
                                               const size_t _size) {
   const auto input_var = InputVarType{flatbuffers::GetRoot<const uint8_t>(
       internal::ptr_cast<const uint8_t*>(_bytes))};
-  return read<T, Ps...>(input_var);
+  const auto verifier = Ref<flatbuffers::Verifier>::make(
+      flatbuffers::Verifier(internal::ptr_cast<const uint8_t*>(_bytes), _size,
+                            flatbuffers::Verifier::Options{}));
+  const auto r = Reader(verifier);
+  return Parser<T, Processors<Ps...>>::read(r, input_var);
 }
 
 /// Parses an object from flatbuffers using reflection.
