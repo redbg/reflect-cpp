@@ -94,7 +94,7 @@ struct Type {
         }
         return _v.type_ptr->template convert_to<T>();
       } else {
-        throw std::runtime_error("Type pointer of reference not set.");
+        throw std::runtime_error("Type pointer of points to wrong type.");
       }
     });
   }

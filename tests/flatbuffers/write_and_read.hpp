@@ -10,6 +10,7 @@
 template <class... Ps>
 void write_and_read(const auto& _struct) {
   using T = std::remove_cvref_t<decltype(_struct)>;
+  rfl::flatbuf::write<Ps...>(_struct, std::cout) << std::endl;
   const auto serialized1 = rfl::flatbuf::write<Ps...>(_struct);
   const auto res = rfl::flatbuf::read<T, Ps...>(serialized1);
   EXPECT_TRUE(res && true) << "Test failed on read. Error: "

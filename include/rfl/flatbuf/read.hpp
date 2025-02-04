@@ -25,12 +25,13 @@ using InputVarType = typename Reader::InputVarType;
 template <class T, class... Ps>
 Result<internal::wrap_in_rfl_array_t<T>> read(const char* _bytes,
                                               const size_t _size) {
-  const auto input_var = InputVarType{flatbuffers::GetRoot<const uint8_t>(
-      internal::ptr_cast<const uint8_t*>(_bytes))};
+  const auto root = flatbuffers::GetRoot<const uint8_t>(
+      internal::ptr_cast<const uint8_t*>(_bytes));
+  const auto input_var = InputVarType{root};
   const auto verifier = Ref<flatbuffers::Verifier>::make(
       flatbuffers::Verifier(internal::ptr_cast<const uint8_t*>(_bytes), _size,
                             flatbuffers::Verifier::Options{}));
-  const auto r = Reader(verifier);
+  const auto r = Reader(root, verifier);
   return Parser<T, Processors<Ps...>>::read(r, input_var);
 }
 

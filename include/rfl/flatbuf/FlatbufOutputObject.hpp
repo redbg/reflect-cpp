@@ -17,29 +17,38 @@ struct FlatbufOutputObject : public FlatbufOutputParent {
   FlatbufOutputObject(const schema::Type::Table& _schema,
                       FlatbufOutputParent* _parent,
                       flatbuffers::FlatBufferBuilder* _fbb)
-      : schema_(_schema),
-        parent_(_parent),
-        fbb_(_fbb),
-        ix_(0),
-        start_(fbb_->StartTable()) {}
+      : schema_(_schema), parent_(_parent), fbb_(_fbb) {
+    sizes_.push_back(0);
+  }
 
   ~FlatbufOutputObject() = default;
 
   /// Adds a scalar to the object.
   template <class T>
   void add_scalar(const T _val) {
-    fbb_->AddElement<T>(calc_vtable_offset(ix_++), _val);
+    // TODO
+    // fbb_->AddElement<T>(calc_vtable_offset(ix_++), _val);
   }
 
   /// Adds an offset to the the array.
   void add_offset(const flatbuffers::uoffset_t _offset) final {
-    fbb_->AddOffset<>(calc_vtable_offset(ix_++),
-                      flatbuffers::Offset<>(_offset));
+    // fbb_->AddOffset<>(calc_vtable_offset(ix_++),
+    //                   flatbuffers::Offset<>(_offset));
+    auto offset = flatbuffers::Offset<>(_offset);
+    const auto ptr = internal::ptr_cast<const uint8_t*>(&offset);
+    data_.insert(data_.end(), ptr, ptr + sizeof(flatbuffers::Offset<>));
+    sizes_.push_back(sizes_.back() + sizeof(flatbuffers::Offset<>));
   }
 
   /// Ends the construction of the object.
   void end() {
-    auto offset = fbb_->EndTable(start_);
+    const auto start = fbb_->StartTable();
+    for (size_t i = 0; i < sizes_.size(); ++i) {
+      fbb_->AddOffset<>(calc_vtable_offset(i),
+                        *internal::ptr_cast<flatbuffers::Offset<>*>(
+                            data_.data() + sizes_[i]));
+    }
+    auto offset = fbb_->EndTable(start);
     if (parent_) {
       parent_->add_offset(offset);
     } else {
@@ -49,7 +58,7 @@ struct FlatbufOutputObject : public FlatbufOutputParent {
 
   /// Returns the schema for the current field.
   const schema::Type& get_current_schema() const {
-    return schema_.fields.at(ix_).second;
+    return schema_.fields.at(sizes_.size() - 1).second;
   }
 
   /// Returns the underlying schema.
@@ -65,11 +74,11 @@ struct FlatbufOutputObject : public FlatbufOutputParent {
   /// Pointer to the underlying flatbuffer builder.
   flatbuffers::FlatBufferBuilder* fbb_;
 
-  /// Indicates the current field.
-  size_t ix_;
+  /// The data.
+  std::vector<uint8_t> data_;
 
-  /// The offset of the start.
-  flatbuffers::uoffset_t start_;
+  /// The underlying sizes.
+  std::vector<uint8_t> sizes_;
 };
 
 }  // namespace rfl::flatbuf

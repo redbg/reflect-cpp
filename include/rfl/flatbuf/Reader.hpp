@@ -51,7 +51,8 @@ class Reader {
   using InputUnionType = FlatbufInputUnion;
   using InputVarType = FlatbufInputVar;
 
-  Reader(const Ref<flatbuffers::Verifier>& _verifier) : verifier_(_verifier) {}
+  Reader(const uint8_t* _root, const Ref<flatbuffers::Verifier>& _verifier)
+      : root_(_root), verifier_(_verifier) {}
 
   template <class T>
   static constexpr bool has_custom_constructor =
@@ -182,10 +183,16 @@ class Reader {
 
  private:
   const uint8_t* apply_ptr_correction(const uint8_t* _ptr) const noexcept {
+    if (_ptr == root_) {
+      return _ptr;
+    }
     return _ptr + flatbuffers::ReadScalar<flatbuffers::uoffset_t>(_ptr);
   }
 
  private:
+  /// The root node.
+  const uint8_t* root_;
+
   /// Used to verify the input stream.
   Ref<flatbuffers::Verifier> verifier_;
 };
