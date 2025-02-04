@@ -45,8 +45,8 @@ std::ostream& operator<<(std::ostream& _os,
   return _os;
 }
 
-const schema::Type* find_in_schema(const FlatbufSchema& _schema,
-                                   const std::string& _name) {
+const schema::Type* FlatbufSchema::find_in_schema(const FlatbufSchema& _schema,
+                                                  const std::string& _name) {
   auto it = _schema.structs_->find(_name);
   if (it != _schema.structs_->end()) [[likely]] {
     return &it->second;
@@ -66,7 +66,8 @@ const schema::Type* find_in_schema(const FlatbufSchema& _schema,
   throw std::runtime_error("Could not find reference to '" + _name + "'.");
 }
 
-void set_reference_ptrs_on_type(const FlatbufSchema& _schema, Type* _type) {
+void FlatbufSchema::set_reference_ptrs_on_type(const FlatbufSchema& _schema,
+                                               Type* _type) {
   _type->value.visit([&](auto& _t) {
     using T = std::remove_cvref_t<decltype(_t)>;
     if constexpr (std::is_same<T, Type::Reference>()) {
@@ -84,26 +85,11 @@ void set_reference_ptrs_on_type(const FlatbufSchema& _schema, Type* _type) {
   });
 }
 
-void set_reference_ptrs_on_map(const FlatbufSchema& _schema,
-                               std::map<std::string, schema::Type>* _map) {
+void FlatbufSchema::set_reference_ptrs_on_map(
+    const FlatbufSchema& _schema, std::map<std::string, schema::Type>* _map) {
   for (auto& [k, v] : *_map) {
     set_reference_ptrs_on_type(_schema, &v);
   }
-}
-
-Result<FlatbufSchema> FlatbufSchema::set_reference_ptrs() const {
-  auto schema = *this;
-  try {
-    set_reference_ptrs_on_map(schema, schema.structs_.get());
-    set_reference_ptrs_on_map(schema, schema.enums_.get());
-    set_reference_ptrs_on_map(schema, schema.tuples_.get());
-    set_reference_ptrs_on_map(schema, schema.unions_.get());
-    schema.root_type_.type_ptr =
-        find_in_schema(schema, schema.root_type_.type_name);
-  } catch (std::exception& e) {
-    return Error(e.what());
-  }
-  return schema;
 }
 
 }  // namespace rfl::flatbuf::schema

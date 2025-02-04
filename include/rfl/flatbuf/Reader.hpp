@@ -19,6 +19,7 @@
 #include "../internal/ptr_cast.hpp"
 #include "calc_elem_size.hpp"
 #include "calc_vtable_offset.hpp"
+#include "rfl/parsing/schemaful/IsSchemafulReader.hpp"
 
 namespace rfl::flatbuf {
 
@@ -50,19 +51,18 @@ class Reader {
   using InputUnionType = FlatbufInputUnion;
   using InputVarType = FlatbufInputVar;
 
-  Reader(const Ref<flatbuffers::Verifier>& _verifier);
+  Reader(const Ref<flatbuffers::Verifier>& _verifier) : verifier_(_verifier) {}
 
   template <class T>
   static constexpr bool has_custom_constructor =
       (requires(InputVarType var) { T::from_flatbuf_obj(var); });
 
-  bool is_empty(const InputVarType& _var) const noexcept;
+  bool is_empty(const InputVarType& _var) const noexcept { return !_var.val_; }
 
   template <class T>
   rfl::Result<T> to_basic_type(const InputVarType& _var) const noexcept {
-    std::cout << "to_basic_type1" << std::endl;
     if (!_var.val_) {
-      return Error("Could not cast, was a nullptr.");
+      return error("Could not cast, was a nullptr.");
     }
     if constexpr (std::is_same<std::remove_cvref_t<T>, std::string>()) {
       return internal::ptr_cast<const flatbuffers::String*>(
@@ -94,14 +94,33 @@ class Reader {
     }
   }
 
-  rfl::Result<InputArrayType> to_array(const InputVarType& _var) const noexcept;
+  rfl::Result<InputArrayType> to_array(
+      const InputVarType& _var) const noexcept {
+    if (!_var.val_) {
+      return error("Could not cast to a vector: Is null.");
+    }
+    return InputArrayType{internal::ptr_cast<const flatbuffers::VectorOfAny*>(
+        apply_ptr_correction(_var.val_))};
+  }
 
   rfl::Result<InputObjectType> to_object(
-      const InputVarType& _var) const noexcept;
+      const InputVarType& _var) const noexcept {
+    if (!_var.val_) {
+      return error("Could not cast to a table: Is null.");
+    }
+    auto obj = InputObjectType{internal::ptr_cast<const flatbuffers::Table*>(
+        apply_ptr_correction(_var.val_))};
+    return obj;
+  }
 
-  rfl::Result<InputMapType> to_map(const InputVarType& _var) const noexcept;
+  rfl::Result<InputMapType> to_map(const InputVarType& _var) const noexcept {
+    // TODO
+  }
 
-  rfl::Result<InputUnionType> to_union(const InputVarType& _var) const noexcept;
+  rfl::Result<InputUnionType> to_union(
+      const InputVarType& _var) const noexcept {
+    // TODO
+  }
 
   template <class ArrayReader>
   std::optional<Error> read_array(const ArrayReader& _array_reader,
@@ -157,7 +176,7 @@ class Reader {
     try {
       return T::from_flatbuf_obj(_var);
     } catch (std::exception& e) {
-      return rfl::Error(e.what());
+      return error(e.what());
     }
   }
 
@@ -170,6 +189,9 @@ class Reader {
   /// Used to verify the input stream.
   Ref<flatbuffers::Verifier> verifier_;
 };
+
+static_assert(parsing::schemaful::IsSchemafulReader<Reader>,
+              "This must be a schemaful reader.");
 
 }  // namespace rfl::flatbuf
 

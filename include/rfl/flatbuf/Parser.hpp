@@ -53,7 +53,7 @@ struct Parser<flatbuf::Reader, flatbuf::Writer, Generic, ProcessorsType> {
   static Result<Generic> read(const flatbuf::Reader&, const T&) noexcept {
     static_assert(always_false_v<T>,
                   "Generics are unsupported in Flatbuffers.");
-    return Error("Unsupported");
+    return error("Unsupported");
   }
 
   template <class P>
