@@ -128,8 +128,7 @@ class Reader {
                                   const InputArrayType& _arr) const noexcept {
     constexpr size_t elem_size =
         calc_elem_size<typename ArrayReader::ValueType>();
-    const size_t size = static_cast<size_t>(_arr.val_->size()) / elem_size;
-    for (size_t i = 0; i < size; ++i) {
+    for (size_t i = 0; i < _arr.val_->size(); ++i) {
       const auto err = _array_reader.read(
           InputVarType{flatbuffers::GetAnyVectorElemAddressOf<const uint8_t>(
               _arr.val_, i, elem_size)});
