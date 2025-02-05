@@ -8,8 +8,7 @@
 #include "Reader.hpp"
 #include "Writer.hpp"
 
-namespace rfl {
-namespace parsing {
+namespace rfl::parsing {
 
 /// Cap'n proto requires us to explicitly set all fields. Because
 /// of that, we require all of the fields and then set them to nullptr, if
@@ -106,16 +105,13 @@ struct Parser<flatbuf::Reader, flatbuf::Writer,
   }
 };
 
-}  // namespace parsing
-}  // namespace rfl
+}  // namespace rfl::parsing
 
-namespace rfl {
-namespace flatbuf {
+namespace rfl::flatbuf {
 
 template <class T, class ProcessorsType>
 using Parser = parsing::Parser<Reader, Writer, T, ProcessorsType>;
 
-}
-}  // namespace rfl
+}  // namespace rfl::flatbuf
 
 #endif

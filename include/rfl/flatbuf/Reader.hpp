@@ -63,12 +63,15 @@ class Reader {
   template <class T>
   rfl::Result<T> to_basic_type(const InputVarType& _var) const noexcept {
     if (!_var.val_) {
-      return error("Could not cast, was a nullptr.");
+      return error("Could not cast to string, was a nullptr.");
     }
     if constexpr (std::is_same<std::remove_cvref_t<T>, std::string>()) {
-      return internal::ptr_cast<const flatbuffers::String*>(
-                 apply_ptr_correction(_var.val_))
-          ->str();
+      const auto* str = internal::ptr_cast<const flatbuffers::String*>(
+          apply_ptr_correction(_var.val_));
+      if (!verifier_->VerifyString(str)) {
+        return error("Could not cast to string.");
+      };
+      return str->str();
 
       /*} else if constexpr (std::is_same<std::remove_cvref_t<T>,
                                         rfl::Bytestring>()) {
@@ -100,8 +103,9 @@ class Reader {
     if (!_var.val_) {
       return error("Could not cast to a vector: Is null.");
     }
-    return InputArrayType{internal::ptr_cast<const flatbuffers::VectorOfAny*>(
-        apply_ptr_correction(_var.val_))};
+    const auto ptr = internal::ptr_cast<const flatbuffers::VectorOfAny*>(
+        apply_ptr_correction(_var.val_));
+    return InputArrayType{ptr};
   }
 
   rfl::Result<InputObjectType> to_object(
@@ -109,9 +113,9 @@ class Reader {
     if (!_var.val_) {
       return error("Could not cast to a table: Is null.");
     }
-    auto obj = InputObjectType{internal::ptr_cast<const flatbuffers::Table*>(
-        apply_ptr_correction(_var.val_))};
-    return obj;
+    const auto ptr = internal::ptr_cast<const flatbuffers::Table*>(
+        apply_ptr_correction(_var.val_));
+    return InputObjectType{ptr};
   }
 
   rfl::Result<InputMapType> to_map(const InputVarType& _var) const noexcept {
@@ -128,6 +132,10 @@ class Reader {
                                   const InputArrayType& _arr) const noexcept {
     constexpr size_t elem_size =
         calc_elem_size<typename ArrayReader::ValueType>();
+    if (!verifier_->VerifyVectorOrString(
+            internal::ptr_cast<const uint8_t*>(_arr.val_), elem_size)) {
+      return Error("Verification of the vector failed.");
+    }
     for (size_t i = 0; i < _arr.val_->size(); ++i) {
       const auto err = _array_reader.read(
           InputVarType{flatbuffers::GetAnyVectorElemAddressOf<const uint8_t>(
