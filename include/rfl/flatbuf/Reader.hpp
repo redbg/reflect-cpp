@@ -65,7 +65,8 @@ class Reader {
     if (!_var.val_) {
       return error("Could not cast to string, was a nullptr.");
     }
-    if constexpr (std::is_same<std::remove_cvref_t<T>, std::string>()) {
+    using Type = std::remove_cvref_t<T>;
+    if constexpr (std::is_same<Type, std::string>()) {
       const auto* str = internal::ptr_cast<const flatbuffers::String*>(
           apply_ptr_correction(_var.val_));
       if (!verifier_->VerifyString(str)) {
@@ -73,7 +74,7 @@ class Reader {
       };
       return str->str();
 
-      /*} else if constexpr (std::is_same<std::remove_cvref_t<T>,
+      /*} else if constexpr (std::is_same<Type,
                                         rfl::Bytestring>()) {
         if (type != capnp::DynamicValue::DATA) {
           return Error("Could not cast to bytestring.");
@@ -82,10 +83,14 @@ class Reader {
         return rfl::Bytestring(internal::ptr_cast<const
         std::byte*>(data.begin()), data.size());*/
 
-    } else if constexpr (std::is_same<std::remove_cvref_t<T>, bool>() ||
-                         std::is_floating_point<std::remove_cvref_t<T>>() ||
-                         std::is_integral<std::remove_cvref_t<T>>()) {
-      return *flatbuffers::ReadScalar<const T*>(_var.val_);
+    } else if constexpr (std::is_same<Type, bool>() ||
+                         std::is_floating_point<Type>() ||
+                         std::is_integral<Type>()) {
+      if (!verifier_->VerifyField<Type>(static_cast<size_t>(_var.val_ - root_),
+                                        0, alignof(Type))) {
+        return error("Could not verify.");
+      }
+      return *flatbuffers::ReadScalar<const Type*>(_var.val_);
 
       /*} else if constexpr (internal::is_literal_v<T>) {
         if (type != capnp::DynamicValue::ENUM) {

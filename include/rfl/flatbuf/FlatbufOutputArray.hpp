@@ -33,11 +33,7 @@ struct FlatbufOutputArray : public FlatbufOutputParent {
   }
 
   /// Adds an offset to the the array.
-  void add_offset(const flatbuffers::uoffset_t _offset) final {
-    auto offset = flatbuffers::Offset<>(_offset);
-    const auto ptr = internal::ptr_cast<const uint8_t*>(&offset);
-    data_.insert(data_.end(), ptr, ptr + sizeof(flatbuffers::Offset<>));
-  }
+  void add_offset(const flatbuffers::uoffset_t _offset) final;
 
   /// Ends the vector by adding it to the builder.
   void end() {

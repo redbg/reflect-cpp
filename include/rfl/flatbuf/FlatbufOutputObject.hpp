@@ -16,10 +16,7 @@ namespace rfl::flatbuf {
 struct FlatbufOutputObject : public FlatbufOutputParent {
   FlatbufOutputObject(const schema::Type::Table& _schema,
                       FlatbufOutputParent* _parent,
-                      flatbuffers::FlatBufferBuilder* _fbb)
-      : schema_(_schema), parent_(_parent), fbb_(_fbb) {
-    sizes_.push_back(0);
-  }
+                      flatbuffers::FlatBufferBuilder* _fbb);
 
   ~FlatbufOutputObject() = default;
 
@@ -31,34 +28,14 @@ struct FlatbufOutputObject : public FlatbufOutputParent {
   }
 
   /// Adds an offset to the the array.
-  void add_offset(const flatbuffers::uoffset_t _offset) final {
-    // fbb_->AddOffset<>(calc_vtable_offset(ix_++),
-    //                   flatbuffers::Offset<>(_offset));
-    auto offset = flatbuffers::Offset<>(_offset);
-    const auto ptr = internal::ptr_cast<const uint8_t*>(&offset);
-    data_.insert(data_.end(), ptr, ptr + sizeof(flatbuffers::Offset<>));
-    sizes_.push_back(sizes_.back() + sizeof(flatbuffers::Offset<>));
-  }
+  void add_offset(const flatbuffers::uoffset_t _offset) final;
 
   /// Ends the construction of the object.
-  void end() {
-    const auto start = fbb_->StartTable();
-    for (size_t i = 0; i < sizes_.size(); ++i) {
-      fbb_->AddOffset<>(calc_vtable_offset(i),
-                        *internal::ptr_cast<flatbuffers::Offset<>*>(
-                            data_.data() + sizes_[i]));
-    }
-    auto offset = fbb_->EndTable(start);
-    if (parent_) {
-      parent_->add_offset(offset);
-    } else {
-      fbb_->Finish(flatbuffers::Offset<>(offset));
-    }
-  }
+  void end();
 
   /// Returns the schema for the current field.
   const schema::Type& get_current_schema() const {
-    return schema_.fields.at(sizes_.size() - 1).second;
+    return schema_.fields.at(offsets_.size() - 1).second;
   }
 
   /// Returns the underlying schema.
@@ -77,8 +54,8 @@ struct FlatbufOutputObject : public FlatbufOutputParent {
   /// The data.
   std::vector<uint8_t> data_;
 
-  /// The underlying sizes.
-  std::vector<uint8_t> sizes_;
+  /// The underlying offsets in the data.
+  std::vector<uint8_t> offsets_;
 };
 
 }  // namespace rfl::flatbuf

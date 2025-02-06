@@ -30,6 +30,7 @@ SOFTWARE.
 // compilation.
 
 #include "rfl/flatbuf/FlatbufOutputArray.cpp"
+#include "rfl/flatbuf/FlatbufOutputObject.cpp"
 #include "rfl/flatbuf/SchemaImpl.cpp"
 #include "rfl/flatbuf/Type.cpp"
 #include "rfl/flatbuf/Writer.cpp"
