@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <rfl/flatbuf.hpp>
+#include <rfl/json.hpp>
 #include <string>
 
 template <class... Ps>

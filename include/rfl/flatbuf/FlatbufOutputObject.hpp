@@ -5,6 +5,7 @@
 #include <flatbuffers/flatbuffers.h>
 
 #include <cstdint>
+#include <cstring>
 #include <vector>
 
 #include "FlatbufOutputParent.hpp"
@@ -14,6 +15,9 @@
 namespace rfl::flatbuf {
 
 struct FlatbufOutputObject : public FlatbufOutputParent {
+  template <class T>
+  struct TypeWrapper {};
+
   FlatbufOutputObject(const schema::Type::Table& _schema,
                       FlatbufOutputParent* _parent,
                       flatbuffers::FlatBufferBuilder* _fbb);
@@ -23,8 +27,10 @@ struct FlatbufOutputObject : public FlatbufOutputParent {
   /// Adds a scalar to the object.
   template <class T>
   void add_scalar(const T _val) {
-    // TODO
-    // fbb_->AddElement<T>(calc_vtable_offset(ix_++), _val);
+    static_assert(sizeof(T) <= sizeof(uint64_t),
+                  "Size cannot be greater than 4.");
+    data_.push_back(0);
+    std::memcpy(&data_.back(), &_val, sizeof(T));
   }
 
   /// Adds an offset to the the array.
@@ -35,11 +41,16 @@ struct FlatbufOutputObject : public FlatbufOutputParent {
 
   /// Returns the schema for the current field.
   const schema::Type& get_current_schema() const {
-    return schema_.fields.at(offsets_.size() - 1).second;
+    return schema_.fields.at(data_.size()).second;
   }
 
   /// Returns the underlying schema.
   const schema::Type::Table& schema() const { return schema_; }
+
+ private:
+  /// Adds an element from data_ to the table to create.
+  void add_to_table(const size_t _i, const schema::Type& _type,
+                    const uint64_t _val);
 
  private:
   /// The underlying schema.
@@ -51,11 +62,8 @@ struct FlatbufOutputObject : public FlatbufOutputParent {
   /// Pointer to the underlying flatbuffer builder.
   flatbuffers::FlatBufferBuilder* fbb_;
 
-  /// The data.
-  std::vector<uint8_t> data_;
-
-  /// The underlying offsets in the data.
-  std::vector<uint8_t> offsets_;
+  /// The data. Note that no type can be greater than 8 bytes.
+  std::vector<uint64_t> data_;
 };
 
 }  // namespace rfl::flatbuf

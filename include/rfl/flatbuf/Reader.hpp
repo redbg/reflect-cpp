@@ -86,11 +86,10 @@ class Reader {
     } else if constexpr (std::is_same<Type, bool>() ||
                          std::is_floating_point<Type>() ||
                          std::is_integral<Type>()) {
-      if (!verifier_->VerifyField<Type>(static_cast<size_t>(_var.val_ - root_),
-                                        0, alignof(Type))) {
+      if (!verifier_->VerifyField<Type>(_var.val_, 0, alignof(Type))) {
         return error("Could not verify.");
       }
-      return *flatbuffers::ReadScalar<const Type*>(_var.val_);
+      return flatbuffers::ReadScalar<Type>(_var.val_);
 
       /*} else if constexpr (internal::is_literal_v<T>) {
         if (type != capnp::DynamicValue::ENUM) {
@@ -167,10 +166,11 @@ class Reader {
     constexpr size_t size = ObjectReader::size();
     for (size_t i = 0; i < size; ++i) {
       const auto offset = calc_vtable_offset(i);
-      if (!_obj.val_->VerifyOffset(*verifier_, offset)) {
+      // TODO
+      /*if (!_obj.val_->VerifyOffset(*verifier_, offset)) {
         return Error("Offset for field " + std::to_string(i + 1) +
                      " could not be verified.");
-      }
+      }*/
       _object_reader.read(i, InputVarType{_obj.val_->GetAddressOf(offset)});
     }
     verifier_->EndTable();

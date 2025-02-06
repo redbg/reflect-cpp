@@ -33,23 +33,24 @@ namespace rfl::flatbuf {
 FlatbufOutputObject::FlatbufOutputObject(const schema::Type::Table& _schema,
                                          FlatbufOutputParent* _parent,
                                          flatbuffers::FlatBufferBuilder* _fbb)
-    : schema_(_schema), parent_(_parent), fbb_(_fbb) {
-  offsets_.push_back(0);
-}
+    : schema_(_schema), parent_(_parent), fbb_(_fbb) {}
 
 void FlatbufOutputObject::add_offset(const flatbuffers::uoffset_t _offset) {
-  auto offset = flatbuffers::Offset<>(_offset);
-  const auto ptr = internal::ptr_cast<const uint8_t*>(&offset);
-  data_.insert(data_.end(), ptr, ptr + sizeof(flatbuffers::Offset<>));
-  offsets_.push_back(offsets_.back() + sizeof(flatbuffers::Offset<>));
+  static_assert(sizeof(flatbuffers::uoffset_t) <= sizeof(uint64_t),
+                "Size cannot be greater than 4.");
+  data_.push_back(0);
+  std::memcpy(&data_.back(), &_offset, sizeof(flatbuffers::uoffset_t));
 }
 
 void FlatbufOutputObject::end() {
+  if (data_.size() != schema_.fields.size()) {
+    throw std::runtime_error(
+        "data_.size(): " + std::to_string(data_.size()) +
+        ", schema_.fields.size(): " + std::to_string(schema_.fields.size()));
+  }
   const auto start = fbb_->StartTable();
-  for (size_t i = 0; i < offsets_.size() - 1; ++i) {
-    fbb_->AddOffset<>(calc_vtable_offset(i),
-                      *internal::ptr_cast<flatbuffers::Offset<>*>(data_.data() +
-                                                                  offsets_[i]));
+  for (size_t i = 0; i < data_.size(); ++i) {
+    add_to_table(i, schema_.fields[i].second, data_[i]);
   }
   auto offset = fbb_->EndTable(start);
   if (parent_) {
@@ -57,6 +58,92 @@ void FlatbufOutputObject::end() {
   } else {
     fbb_->Finish(flatbuffers::Offset<>(offset));
   }
+}
+
+void FlatbufOutputObject::add_to_table(const size_t _i,
+                                       const schema::Type& _type,
+                                       const uint64_t _val) {
+  const auto do_add = [&]<class T>(const TypeWrapper<T>&) {
+    if constexpr (std::is_same<T, flatbuffers::Offset<>>()) {
+      fbb_->AddOffset<>(
+          calc_vtable_offset(_i),
+          flatbuffers::Offset<>(
+              *internal::ptr_cast<const flatbuffers::uoffset_t*>(&_val)));
+    } else {
+      fbb_->AddElement<T>(calc_vtable_offset(_i),
+                          *internal::ptr_cast<const T*>(&_val));
+    }
+  };
+
+  _type.reflection().visit([&]<class T>(const T& _t) {
+    using U = std::remove_cvref_t<T>;
+    if constexpr (std::is_same<U, schema::Type::Bool>()) {
+      throw std::runtime_error("TODO");  // TODO
+
+    } else if constexpr (std::is_same<U, schema::Type::Byte>()) {
+      throw std::runtime_error("TODO");  // TODO
+
+    } else if constexpr (std::is_same<U, schema::Type::UByte>()) {
+      throw std::runtime_error("TODO");  // TODO
+
+    } else if constexpr (std::is_same<U, schema::Type::Int8>()) {
+      return do_add(TypeWrapper<int8_t>{});
+
+    } else if constexpr (std::is_same<U, schema::Type::Int16>()) {
+      return do_add(TypeWrapper<int16_t>{});
+
+    } else if constexpr (std::is_same<U, schema::Type::Int32>()) {
+      return do_add(TypeWrapper<int32_t>{});
+
+    } else if constexpr (std::is_same<U, schema::Type::Int64>()) {
+      return do_add(TypeWrapper<int64_t>{});
+
+    } else if constexpr (std::is_same<U, schema::Type::UInt8>()) {
+      return do_add(TypeWrapper<uint8_t>{});
+
+    } else if constexpr (std::is_same<U, schema::Type::UInt16>()) {
+      return do_add(TypeWrapper<uint16_t>{});
+
+    } else if constexpr (std::is_same<U, schema::Type::UInt32>()) {
+      return do_add(TypeWrapper<uint32_t>{});
+
+    } else if constexpr (std::is_same<U, schema::Type::UInt64>()) {
+      return do_add(TypeWrapper<uint64_t>{});
+
+    } else if constexpr (std::is_same<U, schema::Type::Float32>()) {
+      return do_add(TypeWrapper<float>{});
+
+    } else if constexpr (std::is_same<U, schema::Type::Float64>()) {
+      return do_add(TypeWrapper<double>{});
+
+    } else if constexpr (std::is_same<U, schema::Type::String>() ||
+                         std::is_same<U, schema::Type::Map>() ||
+                         std::is_same<U, schema::Type::Vector>() ||
+                         std::is_same<U, schema::Type::Table>()
+
+    ) {
+      return do_add(TypeWrapper<flatbuffers::Offset<>>{});
+
+    } else if constexpr (std::is_same<U, schema::Type::Enum>()) {
+      throw std::runtime_error("TODO");  // TODO
+
+    } else if constexpr (std::is_same<U, schema::Type::Optional>()) {
+      throw std::runtime_error("TODO");  // TODO
+
+    } else if constexpr (std::is_same<U, schema::Type::Reference>()) {
+      if (!_t.type_ptr) {
+        throw std::runtime_error("type_ptr not set for '" + _t.type_name +
+                                 "'.");
+      }
+      return add_to_table(_i, *_t.type_ptr, _val);
+
+    } else if constexpr (std::is_same<U, schema::Type::Union>()) {
+      throw std::runtime_error("TODO");  // TODO
+
+    } else {
+      static_assert(always_false_v<T>, "Unsupported type");
+    }
+  });
 }
 
 }  // namespace rfl::flatbuf
