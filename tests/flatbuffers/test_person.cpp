@@ -10,10 +10,12 @@
 
 namespace test_tutorial_example {
 
+using Age = rfl::Validator<unsigned int, rfl::Minimum<0>, rfl::Maximum<130>>;
+
 struct Person {
   std::string first_name;
   std::string last_name = "Simpson";
-  int age;
+  Age age;
   std::vector<Person> children;
 };
 
