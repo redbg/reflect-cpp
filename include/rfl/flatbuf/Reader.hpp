@@ -63,7 +63,7 @@ class Reader {
   template <class T>
   rfl::Result<T> to_basic_type(const InputVarType& _var) const noexcept {
     if (!_var.val_) {
-      return error("Could not cast to string, was a nullptr.");
+      return error("Could not cast, was a nullptr.");
     }
     using Type = std::remove_cvref_t<T>;
     if constexpr (std::is_same<Type, std::string>()) {
@@ -166,11 +166,6 @@ class Reader {
     constexpr size_t size = ObjectReader::size();
     for (size_t i = 0; i < size; ++i) {
       const auto offset = calc_vtable_offset(i);
-      // TODO
-      /*if (!_obj.val_->VerifyOffset(*verifier_, offset)) {
-        return Error("Offset for field " + std::to_string(i + 1) +
-                     " could not be verified.");
-      }*/
       _object_reader.read(i, InputVarType{_obj.val_->GetAddressOf(offset)});
     }
     verifier_->EndTable();
