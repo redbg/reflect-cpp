@@ -27,6 +27,7 @@ SOFTWARE.
 #include "rfl/flatbuf/schema/Type.hpp"
 
 #include <functional>
+#include <ranges>
 #include <type_traits>
 
 #include "rfl/internal/strings/strings.hpp"
@@ -118,13 +119,11 @@ std::ostream& operator<<(std::ostream& _os, const Type::Map& _m) {
   return _os << "TODO(" << *_m.type << ")";
 }
 
-std::ostream& operator<<(std::ostream& _os, const Type::Optional& _o) {
-  return _os << "TODO(" << *_o.type << ")";
-}
-
 std::ostream& operator<<(std::ostream& _os, const Type::Table& _t) {
-  _os << "table " << internal::strings::to_pascal_case(_t.name) << " {"
-      << std::endl;
+  _os << "table " << internal::strings::to_pascal_case(_t.name) << " {";
+  if (_t.fields.size() > 0) {
+    _os << std::endl;
+  }
   for (const auto& f : _t.fields) {
     _os << " " << f.first << ":" << f.second << ";" << std::endl;
   }
@@ -132,7 +131,17 @@ std::ostream& operator<<(std::ostream& _os, const Type::Table& _t) {
 }
 
 std::ostream& operator<<(std::ostream& _os, const Type::Union& _u) {
-  return _os << "TODO" << std::endl;
+  _os << "union " << _u.name << " {" << std::endl;
+  for (size_t i = 0; i < _u.fields.size(); ++i) {
+    const auto& f = _u.fields[i];
+    _os << " " << f.first << ":" << f.second;
+    if (i < _u.fields.size() - 1) {
+      _os << "," << std::endl;
+    } else {
+      _os << std::endl;
+    }
+  }
+  return _os << "}" << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& _os, const Type::Reference& _r) {

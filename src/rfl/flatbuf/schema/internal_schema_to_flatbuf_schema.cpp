@@ -129,11 +129,29 @@ Type object_to_flatbuf_schema_type(
 Type optional_to_flatbuf_schema_type(
     const parsing::schema::Type::Optional& _optional,
     const std::map<std::string, parsing::schema::Type>& _definitions,
-    const bool _is_top_level, FlatbufSchema* _flatbuf_schema) {
-  return Type{
-      .value = Type::Optional{
-          .type = make_ref<Type>(type_to_flatbuf_schema_type(
-              *_optional.type_, _definitions, false, _flatbuf_schema))}};
+    FlatbufSchema* _flatbuf_schema) {
+  const auto union_name = std::string("Union") +
+                          std::to_string(_flatbuf_schema->unions_->size() + 1);
+
+  const auto some_schema = Type::Table{
+      .name = union_name + "Some",
+      .fields = std::vector<std::pair<std::string, Type>>(
+          {std::make_pair<std::string, Type>(
+              "value",
+              type_to_flatbuf_schema_type(*_optional.type_, _definitions, false,
+                                          _flatbuf_schema))})};
+
+  (*_flatbuf_schema->union_helpers_)[some_schema.name] = Type{some_schema};
+
+  const auto union_schema = Type::Union{
+      .name = union_name,
+      .fields = std::vector<std::pair<std::string, Type>>(
+          {std::make_pair<std::string, Type>(
+              "some", Type{Type::Reference{.type_name = some_schema.name}})})};
+
+  (*_flatbuf_schema->unions_)[union_schema.name] = Type{union_schema};
+
+  return Type{.value = Type::Reference{.type_name = union_name}};
 }
 
 Type reference_to_flatbuf_schema_type(
@@ -208,8 +226,7 @@ Type type_to_flatbuf_schema_type(
                                            _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::Optional>()) {
-      return optional_to_flatbuf_schema_type(_t, _definitions, _is_top_level,
-                                             _flatbuf_schema);
+      return optional_to_flatbuf_schema_type(_t, _definitions, _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::Reference>()) {
       return reference_to_flatbuf_schema_type(_t, _definitions, _is_top_level,

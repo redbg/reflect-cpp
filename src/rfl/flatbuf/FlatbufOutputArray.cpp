@@ -105,9 +105,6 @@ flatbuffers::uoffset_t FlatbufOutputArray::build_vector(
         } else if constexpr (std::is_same<U, schema::Type::Map>()) {
           return do_create(TypeWrapper<flatbuffers::Offset<>>{});
 
-        } else if constexpr (std::is_same<U, schema::Type::Optional>()) {
-          throw std::runtime_error("TODO");  // TODO
-
         } else if constexpr (std::is_same<U, schema::Type::Vector>()) {
           return do_create(TypeWrapper<flatbuffers::Offset<>>{});
 

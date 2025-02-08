@@ -127,9 +127,6 @@ void FlatbufOutputObject::add_to_table(const size_t _i,
     } else if constexpr (std::is_same<U, schema::Type::Enum>()) {
       throw std::runtime_error("TODO");  // TODO
 
-    } else if constexpr (std::is_same<U, schema::Type::Optional>()) {
-      throw std::runtime_error("TODO");  // TODO
-
     } else if constexpr (std::is_same<U, schema::Type::Reference>()) {
       if (!_t.type_ptr) {
         throw std::runtime_error("type_ptr not set for '" + _t.type_name +

@@ -39,9 +39,10 @@ std::ostream& operator<<(std::ostream& _os,
 
 std::ostream& operator<<(std::ostream& _os,
                          const FlatbufSchema& _flatbuf_schema) {
-  _os << *_flatbuf_schema.structs_ << *_flatbuf_schema.enums_
-      << *_flatbuf_schema.tuples_ << *_flatbuf_schema.unions_ << "root_type "
-      << _flatbuf_schema.root_type_ << ";";
+  _os << *_flatbuf_schema.enums_ << *_flatbuf_schema.tuples_
+      << *_flatbuf_schema.unions_ << *_flatbuf_schema.union_helpers_
+      << *_flatbuf_schema.structs_ << "root_type " << _flatbuf_schema.root_type_
+      << ";";
   return _os;
 }
 
@@ -63,6 +64,10 @@ const schema::Type* FlatbufSchema::find_in_schema(const FlatbufSchema& _schema,
   if (it != _schema.unions_->end()) {
     return &it->second;
   }
+  it = _schema.union_helpers_->find(_name);
+  if (it != _schema.union_helpers_->end()) {
+    return &it->second;
+  }
   throw std::runtime_error("Could not find reference to '" + _name + "'.");
 }
 
@@ -72,8 +77,7 @@ void FlatbufSchema::set_reference_ptrs_on_type(const FlatbufSchema& _schema,
     using T = std::remove_cvref_t<decltype(_t)>;
     if constexpr (std::is_same<T, Type::Reference>()) {
       _t.type_ptr = find_in_schema(_schema, _t.type_name);
-    } else if constexpr (std::is_same<T, Type::Optional>() ||
-                         std::is_same<T, Type::Vector>() ||
+    } else if constexpr (std::is_same<T, Type::Vector>() ||
                          std::is_same<T, Type::Map>()) {
       set_reference_ptrs_on_type(_schema, _t.type.get());
     } else if constexpr (std::is_same<T, Type::Table>() ||
