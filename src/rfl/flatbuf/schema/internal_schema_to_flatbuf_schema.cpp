@@ -151,7 +151,17 @@ Type optional_to_flatbuf_schema_type(
 
   (*_flatbuf_schema->unions_)[union_schema.name] = Type{union_schema};
 
-  return Type{.value = Type::Reference{.type_name = union_name}};
+  const auto wrapper_schema = Type::Table{
+      .name = union_name + "Wrapper",
+      .fields = std::vector<std::pair<std::string, Type>>(
+          {std::make_pair<std::string, Type>(
+              "value",
+              Type{.value = Type::Reference{.type_name = union_name}})})};
+
+  (*_flatbuf_schema->union_helpers_)[wrapper_schema.name] =
+      Type{wrapper_schema};
+
+  return Type{.value = Type::Reference{.type_name = wrapper_schema.name}};
 }
 
 Type reference_to_flatbuf_schema_type(
