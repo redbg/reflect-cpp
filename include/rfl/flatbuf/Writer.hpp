@@ -25,6 +25,7 @@
 #include "../internal/ptr_cast.hpp"
 #include "FlatbufOutputArray.hpp"
 #include "FlatbufOutputObject.hpp"
+#include "FlatbufOutputUnion.hpp"
 #include "calc_vtable_offset.hpp"
 #include "schema/FlatbufSchema.hpp"
 #include "schema/Type.hpp"
@@ -35,9 +36,6 @@ class Writer {
  public:
   // TODO
   struct FlatbufOutputMap {};
-
-  // TODO
-  struct FlatbufOutputUnion {};
 
   struct FlatbufOutputVar {};
 
