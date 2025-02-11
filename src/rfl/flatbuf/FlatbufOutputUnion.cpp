@@ -33,14 +33,9 @@ SOFTWARE.
 namespace rfl::flatbuf {
 
 FlatbufOutputUnion::FlatbufOutputUnion(const schema::Type::Union& _schema,
-                                       const size_t _index,
                                        FlatbufOutputParent* _parent,
                                        flatbuffers::FlatBufferBuilder* _fbb)
-    : schema_(_schema),
-      index_(_index),
-      parent_(_parent),
-      fbb_(_fbb),
-      data_(0) {}
+    : schema_(_schema), parent_(_parent), fbb_(_fbb), index_(0), data_(0) {}
 
 void FlatbufOutputUnion::add_offset(const flatbuffers::uoffset_t _offset) {
   static_assert(sizeof(flatbuffers::uoffset_t) <= sizeof(uint64_t),

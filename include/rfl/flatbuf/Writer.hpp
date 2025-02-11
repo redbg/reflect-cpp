@@ -173,7 +173,8 @@ class Writer {
   template <class T>
   OutputVarType add_value_to_union(const size_t _index, const T& _var,
                                    OutputUnionType* _parent) const noexcept {
-    // TODO
+    _parent->set_index(_index);
+    return add_value(_var, _parent);
   }
 
   void end_array(OutputArrayType* _arr) const noexcept { _arr->end(); }

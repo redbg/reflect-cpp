@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <stdexcept>
 #include <vector>
 
 #include "FlatbufOutputParent.hpp"
@@ -15,7 +16,7 @@
 namespace rfl::flatbuf {
 
 struct FlatbufOutputUnion : public FlatbufOutputParent {
-  FlatbufOutputUnion(const schema::Type::Union& _schema, const size_t _index,
+  FlatbufOutputUnion(const schema::Type::Union& _schema,
                      FlatbufOutputParent* _parent,
                      flatbuffers::FlatBufferBuilder* _fbb);
 
@@ -43,18 +44,26 @@ struct FlatbufOutputUnion : public FlatbufOutputParent {
   /// Returns the underlying schema.
   const schema::Type::Union& schema() const { return schema_; }
 
+  /// Sets the index
+  void set_index(const size_t _index) {
+    if (_index >= schema_.fields.size()) {
+      throw std::runtime_error("Index for the union out of bounds.");
+    }
+    index_ = _index;
+  }
+
  private:
   /// The underlying schema.
   schema::Type::Union schema_;
-
-  /// Indicates which of the options is currently active.
-  size_t index_;
 
   /// The parent. nullptr if this is root.
   FlatbufOutputParent* parent_;
 
   /// Pointer to the underlying flatbuffer builder.
   flatbuffers::FlatBufferBuilder* fbb_;
+
+  /// Indicates which of the options is currently active.
+  size_t index_;
 
   /// The data. Note that no type can be greater than 8 bytes.
   uint64_t data_;

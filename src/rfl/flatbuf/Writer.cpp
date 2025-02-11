@@ -46,7 +46,12 @@ Writer::OutputArrayType Writer::add_array_to_object(
 
 Writer::OutputArrayType Writer::add_array_to_union(
     const size_t _index, const size_t _size,
-    OutputUnionType* _parent) const noexcept {}
+    OutputUnionType* _parent) const noexcept {
+  _parent->set_index(_index);
+  return OutputArrayType(
+      _parent->get_current_schema().convert_to<schema::Type::Vector>(), _parent,
+      fbb_.get());
+}
 
 Writer::OutputMapType Writer::add_map_to_array(
     const size_t _size, OutputArrayType* _parent) const noexcept {}
@@ -84,19 +89,37 @@ Writer::OutputObjectType Writer::add_object_to_object(
 
 Writer::OutputObjectType Writer::add_object_to_union(
     const size_t _index, const size_t _size,
-    OutputUnionType* _parent) const noexcept {}
+    OutputUnionType* _parent) const noexcept {
+  _parent->set_index(_index);
+  return OutputObjectType(
+      _parent->get_current_schema().convert_to<schema::Type::Table>(), _parent,
+      fbb_.get());
+}
 
 Writer::OutputUnionType Writer::add_union_to_array(
-    OutputArrayType* _parent) const noexcept {}
+    OutputArrayType* _parent) const noexcept {
+  return OutputUnionType(
+      _parent->schema().type->convert_to<schema::Type::Union>(), _parent,
+      fbb_.get());
+}
 
 Writer::OutputUnionType Writer::add_union_to_map(
     const std::string_view& _name, OutputMapType* _parent) const noexcept {}
 
 Writer::OutputUnionType Writer::add_union_to_object(
-    const std::string_view& _name, OutputObjectType* _parent) const noexcept {}
+    const std::string_view& _name, OutputObjectType* _parent) const noexcept {
+  return OutputUnionType(
+      _parent->get_current_schema().convert_to<schema::Type::Union>(), _parent,
+      fbb_.get());
+}
 
 Writer::OutputUnionType Writer::add_union_to_union(
-    const size_t _index, OutputUnionType* _parent) const noexcept {}
+    const size_t _index, OutputUnionType* _parent) const noexcept {
+  _parent->set_index(_index);
+  return OutputUnionType(
+      _parent->get_current_schema().convert_to<schema::Type::Union>(), _parent,
+      fbb_.get());
+}
 
 Writer::OutputVarType Writer::add_null_to_array(
     OutputArrayType* _parent) const noexcept {}
