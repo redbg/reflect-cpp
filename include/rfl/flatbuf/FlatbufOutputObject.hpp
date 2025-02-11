@@ -48,11 +48,6 @@ struct FlatbufOutputObject : public FlatbufOutputParent {
   const schema::Type::Table& schema() const { return schema_; }
 
  private:
-  /// Adds an element from data_ to the table to create.
-  void add_to_table(const size_t _i, const schema::Type& _type,
-                    const uint64_t _val);
-
- private:
   /// The underlying schema.
   schema::Type::Table schema_;
 
