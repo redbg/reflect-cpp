@@ -32,7 +32,7 @@ SOFTWARE.
 
 namespace rfl::flatbuf {
 
-FlatbufOutputUnion::FlatbufOutputUnion(const schema::Type::Table& _schema,
+FlatbufOutputUnion::FlatbufOutputUnion(const schema::Type::Union& _schema,
                                        const size_t _index,
                                        FlatbufOutputParent* _parent,
                                        flatbuffers::FlatBufferBuilder* _fbb)

@@ -15,10 +15,7 @@
 namespace rfl::flatbuf {
 
 struct FlatbufOutputUnion : public FlatbufOutputParent {
-  template <class T>
-  struct TypeWrapper {};
-
-  FlatbufOutputUnion(const schema::Type::Table& _schema, const size_t _index,
+  FlatbufOutputUnion(const schema::Type::Union& _schema, const size_t _index,
                      FlatbufOutputParent* _parent,
                      flatbuffers::FlatBufferBuilder* _fbb);
 
@@ -44,11 +41,11 @@ struct FlatbufOutputUnion : public FlatbufOutputParent {
   }
 
   /// Returns the underlying schema.
-  const schema::Type::Table& schema() const { return schema_; }
+  const schema::Type::Union& schema() const { return schema_; }
 
  private:
   /// The underlying schema.
-  schema::Type::Table schema_;
+  schema::Type::Union schema_;
 
   /// Indicates which of the options is currently active.
   size_t index_;
