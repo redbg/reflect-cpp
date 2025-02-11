@@ -38,7 +38,7 @@ class Reader {
   };
 
   struct FlatbufInputUnion {
-    const uint8_t* val_;
+    const flatbuffers::Table* val_;
   };
 
   struct FlatbufInputVar {
@@ -128,7 +128,12 @@ class Reader {
 
   rfl::Result<InputUnionType> to_union(
       const InputVarType& _var) const noexcept {
-    // TODO
+    if (!_var.val_) {
+      return error("Could not cast to a table: Is null.");
+    }
+    const auto ptr = internal::ptr_cast<const flatbuffers::Table*>(
+        apply_ptr_correction(_var.val_));
+    return InputUnionType{ptr};
   }
 
   template <class ArrayReader>
@@ -175,7 +180,19 @@ class Reader {
   template <class VariantType, class UnionReaderType>
   rfl::Result<VariantType> read_union(
       const InputUnionType& _union) const noexcept {
-    // TODO
+    /*if (!_obj.val_->VerifyTableStart(*verifier_)) {
+      return error("Table start could not be verified.");
+    }
+    const auto disc_val = _union.val_->GetAddressOf(calc_vtable_offset(0));
+    if (!verifier_->VerifyField<uint8_t>(disc_val, 0, alignof(uint8_t))) {
+      return error("Could not verify the type of the discriminant.");
+    }
+    const auto disc = flatbuffers::ReadScalar<uint8_t>(disc_val);
+    auto result = UnionReaderType::read(
+        *this, static_cast<size_t>(disc),
+        InputVarType{_union.val_->GetAddressOf(calc_vtable_offset(1))});
+    verifier_->EndTable();
+    return result;*/
   }
 
   template <class T>
