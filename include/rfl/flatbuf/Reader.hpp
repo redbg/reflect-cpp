@@ -180,19 +180,35 @@ class Reader {
   template <class VariantType, class UnionReaderType>
   rfl::Result<VariantType> read_union(
       const InputUnionType& _union) const noexcept {
-    /*if (!_obj.val_->VerifyTableStart(*verifier_)) {
+    if (!_union.val_->VerifyTableStart(*verifier_)) {
       return error("Table start could not be verified.");
     }
+
     const auto disc_val = _union.val_->GetAddressOf(calc_vtable_offset(0));
     if (!verifier_->VerifyField<uint8_t>(disc_val, 0, alignof(uint8_t))) {
       return error("Could not verify the type of the discriminant.");
     }
     const auto disc = flatbuffers::ReadScalar<uint8_t>(disc_val);
-    auto result = UnionReaderType::read(
-        *this, static_cast<size_t>(disc),
-        InputVarType{_union.val_->GetAddressOf(calc_vtable_offset(1))});
+
+    const auto retrieve_value = [&](const auto& _inner_table) {
+      if (!_inner_table.val_->VerifyTableStart(*verifier_)) {
+        return error("Table start could not be verified.");
+      }
+      const auto val =
+          InputVarType{_inner_table->GetAddressOf(calc_vtable_offset(0))};
+      verifier_->EndTable();
+      return UnionReaderType::read(*this, static_cast<size_t>(disc) - 1, val);
+    };
+
+    const auto result =
+        disc == 0 ? UnionReaderType::read(*this, 0, InputVarType{nullptr})
+                  : to_object(InputVarType{_union.val_->GetAddressOf(
+                                  calc_vtable_offset(1))})
+                        .and_then(retrieve_value);
+
     verifier_->EndTable();
-    return result;*/
+
+    return result;
   }
 
   template <class T>
