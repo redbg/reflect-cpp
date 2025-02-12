@@ -190,18 +190,19 @@ class Reader {
     }
     const auto disc = flatbuffers::ReadScalar<uint8_t>(disc_val);
 
-    const auto retrieve_value = [&](const auto& _inner_table) {
+    const auto retrieve_value =
+        [&](const auto& _inner_table) -> rfl::Result<VariantType> {
       if (!_inner_table.val_->VerifyTableStart(*verifier_)) {
         return error("Table start could not be verified.");
       }
       const auto val =
-          InputVarType{_inner_table->GetAddressOf(calc_vtable_offset(0))};
+          InputVarType{_inner_table.val_->GetAddressOf(calc_vtable_offset(0))};
       verifier_->EndTable();
       return UnionReaderType::read(*this, static_cast<size_t>(disc) - 1, val);
     };
 
     const auto result =
-        disc == 0 ? UnionReaderType::read(*this, 0, InputVarType{nullptr})
+        disc == 0 ? UnionReaderType::read(*this, 1, InputVarType{nullptr})
                   : to_object(InputVarType{_union.val_->GetAddressOf(
                                   calc_vtable_offset(1))})
                         .and_then(retrieve_value);

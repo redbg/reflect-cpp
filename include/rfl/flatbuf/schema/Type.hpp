@@ -90,7 +90,9 @@ struct Type {
         }
         return _v.type_ptr->template convert_to<T>();
       } else {
-        throw std::runtime_error("Type pointer of points to wrong type.");
+        std::stringstream stream;
+        stream << "Type pointer points to wrong type: " << _v;
+        throw std::runtime_error(stream.str());
       }
     });
   }

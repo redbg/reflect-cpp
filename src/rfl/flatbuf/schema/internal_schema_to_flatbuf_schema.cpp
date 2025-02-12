@@ -130,6 +130,12 @@ Type optional_to_flatbuf_schema_type(
     const parsing::schema::Type::Optional& _optional,
     const std::map<std::string, parsing::schema::Type>& _definitions,
     FlatbufSchema* _flatbuf_schema) {
+  if (_flatbuf_schema->union_helpers_->find("None") ==
+      _flatbuf_schema->union_helpers_->end()) {
+    const auto none_schema = Type::Table{.name = "None"};
+    (*_flatbuf_schema->union_helpers_)[none_schema.name] = Type{none_schema};
+  }
+
   const auto union_name = std::string("Union") +
                           std::to_string(_flatbuf_schema->unions_->size() + 1);
 
@@ -147,7 +153,9 @@ Type optional_to_flatbuf_schema_type(
       .name = union_name,
       .fields = std::vector<std::pair<std::string, Type>>(
           {std::make_pair<std::string, Type>(
-              "some", Type{Type::Reference{.type_name = some_schema.name}})})};
+               "some", Type{Type::Reference{.type_name = some_schema.name}}),
+           std::make_pair<std::string, Type>(
+               "none", Type{Type::Reference{.type_name = "None"}})})};
 
   (*_flatbuf_schema->unions_)[union_schema.name] = Type{union_schema};
 

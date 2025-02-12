@@ -48,9 +48,11 @@ Writer::OutputArrayType Writer::add_array_to_union(
     const size_t _index, const size_t _size,
     OutputUnionType* _parent) const noexcept {
   _parent->set_index(_index);
-  return OutputArrayType(
-      _parent->get_current_schema().convert_to<schema::Type::Vector>(), _parent,
-      fbb_.get());
+  return OutputArrayType(_parent->get_current_schema()
+                             .convert_to<schema::Type::Table>()
+                             .fields.at(0)
+                             .second.convert_to<schema::Type::Vector>(),
+                         _parent, fbb_.get());
 }
 
 Writer::OutputMapType Writer::add_map_to_array(
@@ -91,16 +93,20 @@ Writer::OutputObjectType Writer::add_object_to_union(
     const size_t _index, const size_t _size,
     OutputUnionType* _parent) const noexcept {
   _parent->set_index(_index);
-  return OutputObjectType(
-      _parent->get_current_schema().convert_to<schema::Type::Table>(), _parent,
-      fbb_.get());
+  return OutputObjectType(_parent->get_current_schema()
+                              .convert_to<schema::Type::Table>()
+                              .fields.at(0)
+                              .second.convert_to<schema::Type::Table>(),
+                          _parent, fbb_.get());
 }
 
 Writer::OutputUnionType Writer::add_union_to_array(
     OutputArrayType* _parent) const noexcept {
-  return OutputUnionType(
-      _parent->schema().type->convert_to<schema::Type::Union>(), _parent,
-      fbb_.get());
+  return OutputUnionType(_parent->schema()
+                             .type->convert_to<schema::Type::Table>()
+                             .fields.at(0)
+                             .second.convert_to<schema::Type::Union>(),
+                         _parent, fbb_.get());
 }
 
 Writer::OutputUnionType Writer::add_union_to_map(
@@ -108,17 +114,23 @@ Writer::OutputUnionType Writer::add_union_to_map(
 
 Writer::OutputUnionType Writer::add_union_to_object(
     const std::string_view& _name, OutputObjectType* _parent) const noexcept {
-  return OutputUnionType(
-      _parent->get_current_schema().convert_to<schema::Type::Union>(), _parent,
-      fbb_.get());
+  return OutputUnionType(_parent->get_current_schema()
+                             .convert_to<schema::Type::Table>()
+                             .fields.at(0)
+                             .second.convert_to<schema::Type::Union>(),
+                         _parent, fbb_.get());
 }
 
 Writer::OutputUnionType Writer::add_union_to_union(
     const size_t _index, OutputUnionType* _parent) const noexcept {
   _parent->set_index(_index);
-  return OutputUnionType(
-      _parent->get_current_schema().convert_to<schema::Type::Union>(), _parent,
-      fbb_.get());
+  return OutputUnionType(_parent->get_current_schema()
+                             .convert_to<schema::Type::Table>()
+                             .fields.at(0)
+                             .second.convert_to<schema::Type::Table>()
+                             .fields.at(0)
+                             .second.convert_to<schema::Type::Union>(),
+                         _parent, fbb_.get());
 }
 
 Writer::OutputVarType Writer::add_null_to_array(
@@ -131,6 +143,12 @@ Writer::OutputVarType Writer::add_null_to_object(
     const std::string_view& _name, OutputObjectType* _parent) const noexcept {}
 
 Writer::OutputVarType Writer::add_null_to_union(
-    const size_t _index, OutputUnionType* _parent) const noexcept {}
+    const size_t _index, OutputUnionType* _parent) const noexcept {
+  _parent->set_index(_index);
+  const auto start = fbb_->StartTable();
+  const auto offset = fbb_->EndTable(start);
+  _parent->add_offset(offset);
+  return OutputVarType{};
+}
 
 }  // namespace rfl::flatbuf

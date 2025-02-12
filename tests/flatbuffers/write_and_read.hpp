@@ -17,5 +17,6 @@ void write_and_read(const auto& _struct) {
                            << res.error().what();
   const auto serialized2 = rfl::flatbuf::write<Ps...>(res.value());
   EXPECT_EQ(serialized1, serialized2);
+  EXPECT_EQ(rfl::json::write(_struct), rfl::json::write(res.value()));
 }
 #endif

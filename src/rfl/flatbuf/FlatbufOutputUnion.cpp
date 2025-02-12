@@ -41,24 +41,27 @@ void FlatbufOutputUnion::add_offset(const flatbuffers::uoffset_t _offset) {
   static_assert(sizeof(flatbuffers::uoffset_t) <= sizeof(uint64_t),
                 "Size cannot be greater than 4.");
   std::memcpy(&data_, &_offset, sizeof(flatbuffers::uoffset_t));
+  end();
 }
 
 void FlatbufOutputUnion::end() {
+  const auto inner_table_schema =
+      schema_.fields.at(index_).second.convert_to<schema::Type::Table>();
+
   const auto inner_start = fbb_->StartTable();
-  add_to_table(0, schema_.fields.at(index_).second, data_, fbb_);
+  if (inner_table_schema.fields.size() == 1) {
+    add_to_table(0, inner_table_schema.fields.at(0).second, data_, fbb_);
+  }
   const auto inner_offset = fbb_->EndTable(inner_start);
 
+  const auto index = static_cast<uint8_t>(index_ + 1);
+
   const auto outer_start = fbb_->StartTable();
-  fbb_->AddElement<uint8_t>(calc_vtable_offset(0),
-                            static_cast<uint8_t>(index_));
+  fbb_->AddElement<uint8_t>(calc_vtable_offset(0), index);
   fbb_->AddOffset<>(calc_vtable_offset(1), flatbuffers::Offset<>(inner_offset));
   const auto outer_offset = fbb_->EndTable(outer_start);
 
-  if (parent_) {
-    parent_->add_offset(outer_offset);
-  } else {
-    fbb_->Finish(flatbuffers::Offset<>(outer_offset));
-  }
+  parent_->add_offset(outer_offset);
 }
 
 }  // namespace rfl::flatbuf

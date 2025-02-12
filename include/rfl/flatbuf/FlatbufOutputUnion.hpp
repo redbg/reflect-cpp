@@ -28,13 +28,11 @@ struct FlatbufOutputUnion : public FlatbufOutputParent {
     static_assert(sizeof(T) <= sizeof(uint64_t),
                   "Size cannot be greater than 4.");
     std::memcpy(&data_, &_val, sizeof(T));
+    end();
   }
 
   /// Adds an offset to the the array.
   void add_offset(const flatbuffers::uoffset_t _offset) final;
-
-  /// Ends the construction of the object.
-  void end();
 
   /// Returns the schema for the current field.
   const schema::Type& get_current_schema() const {
@@ -51,6 +49,10 @@ struct FlatbufOutputUnion : public FlatbufOutputParent {
     }
     index_ = _index;
   }
+
+ private:
+  /// Ends the construction of the object.
+  void end();
 
  private:
   /// The underlying schema.

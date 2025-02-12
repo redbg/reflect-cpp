@@ -27,6 +27,6 @@ TEST(flatbuffers, test_optional_fields) {
 
   std::cout << rfl::flatbuf::to_schema<Person>().value() << std::endl;
 
-  // write_and_read(homer);
+  write_and_read(homer);
 }
 }  // namespace test_optional_fields
