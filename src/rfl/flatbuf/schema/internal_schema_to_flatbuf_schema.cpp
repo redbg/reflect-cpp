@@ -44,7 +44,7 @@ Type type_to_flatbuf_schema_type(
 Type any_of_to_flatbuf_schema_type(
     const parsing::schema::Type::AnyOf& _any_of,
     const std::map<std::string, parsing::schema::Type>& _definitions,
-    const bool _is_top_level, FlatbufSchema* _flatbuf_schema) {
+    FlatbufSchema* _flatbuf_schema) {
   auto value =
       Type::Union{.name = std::string("Union") +
                           std::to_string(_flatbuf_schema->unions_->size() + 1)};
@@ -55,13 +55,9 @@ Type any_of_to_flatbuf_schema_type(
                        type_to_flatbuf_schema_type(type, _definitions, false,
                                                    _flatbuf_schema)));
   }
-  if (_is_top_level) {
-    return Type{.value = value};
-  } else {
-    const auto type = Type{value};
-    (*_flatbuf_schema->unions_)[value.name] = type;
-    return Type{.value = schema::Type::Reference{.type_name = value.name}};
-  }
+  const auto type = Type{value};
+  (*_flatbuf_schema->unions_)[value.name] = type;
+  return Type{.value = schema::Type::Reference{.type_name = value.name}};
 }
 
 Type literal_to_flatbuf_schema_type(
@@ -222,8 +218,7 @@ Type type_to_flatbuf_schema_type(
       return schema::Type{.value = schema::Type::String{}};
 
     } else if constexpr (std::is_same<T, Type::AnyOf>()) {
-      return any_of_to_flatbuf_schema_type(_t, _definitions, _is_top_level,
-                                           _flatbuf_schema);
+      return any_of_to_flatbuf_schema_type(_t, _definitions, _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::Description>()) {
       return type_to_flatbuf_schema_type(*_t.type_, _definitions, _is_top_level,
