@@ -25,8 +25,6 @@ TEST(flatbuffers, test_optional_fields) {
       Person{.first_name = "Homer",
              .children = std::vector<Person>({bart, lisa, maggie})};
 
-  std::cout << rfl::flatbuf::to_schema<Person>().value() << std::endl;
-
   write_and_read(homer);
 }
 }  // namespace test_optional_fields

@@ -41,23 +41,57 @@ Type type_to_flatbuf_schema_type(
     const std::map<std::string, parsing::schema::Type>& _definitions,
     const bool _is_top_level, FlatbufSchema* _flatbuf_schema);
 
+std::vector<std::pair<std::string, Type>> any_of_make_inner_tables_references(
+    const std::string& _union_name, const parsing::schema::Type::AnyOf& _any_of,
+    const std::map<std::string, parsing::schema::Type>& _definitions,
+    FlatbufSchema* _flatbuf_schema) {
+  std::vector<std::pair<std::string, Type>> references;
+
+  for (size_t i = 0; i < _any_of.types_.size(); ++i) {
+    const auto table_schema = Type::Table{
+        .name = _union_name + "Opt" + std::to_string(i + 1),
+        .fields = std::vector<std::pair<std::string, Type>>(
+            {std::make_pair<std::string, Type>(
+                "value",
+                type_to_flatbuf_schema_type(_any_of.types_[i], _definitions,
+                                            false, _flatbuf_schema))})};
+
+    (*_flatbuf_schema->union_helpers_)[table_schema.name] = Type{table_schema};
+
+    references.push_back(
+        std::make_pair("opt" + std::to_string(i + 1),
+                       Type{Type::Reference{.type_name = table_schema.name}}));
+  }
+
+  return references;
+}
+
 Type any_of_to_flatbuf_schema_type(
     const parsing::schema::Type::AnyOf& _any_of,
     const std::map<std::string, parsing::schema::Type>& _definitions,
     FlatbufSchema* _flatbuf_schema) {
-  auto value =
-      Type::Union{.name = std::string("Union") +
-                          std::to_string(_flatbuf_schema->unions_->size() + 1)};
-  size_t i = 1;
-  for (const auto& type : _any_of.types_) {
-    value.fields.push_back(
-        std::make_pair(std::string("Opt" + std::to_string(i++)),
-                       type_to_flatbuf_schema_type(type, _definitions, false,
-                                                   _flatbuf_schema)));
-  }
-  const auto type = Type{value};
-  (*_flatbuf_schema->unions_)[value.name] = type;
-  return Type{.value = schema::Type::Reference{.type_name = value.name}};
+  const auto union_name = std::string("Union") +
+                          std::to_string(_flatbuf_schema->unions_->size() + 1);
+
+  const auto fields = any_of_make_inner_tables_references(
+      union_name, _any_of, _definitions, _flatbuf_schema);
+
+  const auto union_schema =
+      Type{Type::Union{.name = union_name, .fields = fields}};
+
+  (*_flatbuf_schema->unions_)[union_name] = union_schema;
+
+  const auto wrapper_schema = Type::Table{
+      .name = union_name + "Wrapper",
+      .fields = std::vector<std::pair<std::string, Type>>(
+          {std::make_pair<std::string, Type>(
+              "value",
+              Type{.value = Type::Reference{.type_name = union_name}})})};
+
+  (*_flatbuf_schema->union_helpers_)[wrapper_schema.name] =
+      Type{wrapper_schema};
+
+  return Type{.value = Type::Reference{.type_name = wrapper_schema.name}};
 }
 
 Type literal_to_flatbuf_schema_type(
