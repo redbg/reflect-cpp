@@ -13,9 +13,7 @@ namespace rfl::flatbuf {
 struct FlatbufOutputMap : public FlatbufOutputParent {
   FlatbufOutputMap(const schema::Type::Map& _schema,
                    FlatbufOutputParent* _parent)
-      : schema_(_schema), parent_(_parent), ix_(0), elem_size_(1 /*TODO*/) {
-    data_ = std::vector<uint8_t>(elem_size_ * _size);
-  }
+      : schema_(_schema), parent_(_parent), ix_(0), elem_size_(1 /*TODO*/) {}
 
   ~FlatbufOutputMap() = default;
 

@@ -133,22 +133,18 @@ Writer::OutputUnionType Writer::add_union_to_union(
                          _parent, fbb_.get());
 }
 
-Writer::OutputVarType Writer::add_null_to_array(
-    OutputArrayType* _parent) const noexcept {}
-
-Writer::OutputVarType Writer::add_null_to_map(
-    const std::string_view& _name, OutputMapType* _parent) const noexcept {}
-
-Writer::OutputVarType Writer::add_null_to_object(
-    const std::string_view& _name, OutputObjectType* _parent) const noexcept {}
-
-Writer::OutputVarType Writer::add_null_to_union(
-    const size_t _index, OutputUnionType* _parent) const noexcept {
-  _parent->set_index(_index);
+Writer::OutputVarType Writer::add_null(
+    FlatbufOutputParent* _parent) const noexcept {
   const auto start = fbb_->StartTable();
   const auto offset = fbb_->EndTable(start);
   _parent->add_offset(offset);
   return OutputVarType{};
+}
+
+Writer::OutputVarType Writer::add_null_to_union(
+    const size_t _index, OutputUnionType* _parent) const noexcept {
+  _parent->set_index(_index);
+  return add_null(_parent);
 }
 
 }  // namespace rfl::flatbuf

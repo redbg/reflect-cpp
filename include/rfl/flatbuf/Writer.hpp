@@ -24,6 +24,7 @@
 #include "../internal/is_literal.hpp"
 #include "../internal/ptr_cast.hpp"
 #include "FlatbufOutputArray.hpp"
+#include "FlatbufOutputMap.hpp"
 #include "FlatbufOutputObject.hpp"
 #include "FlatbufOutputUnion.hpp"
 #include "calc_vtable_offset.hpp"
@@ -35,7 +36,6 @@ namespace rfl::flatbuf {
 class Writer {
  public:
   // TODO
-  struct FlatbufOutputMap {};
 
   struct FlatbufOutputVar {};
 
@@ -140,13 +140,19 @@ class Writer {
   OutputUnionType add_union_to_union(const size_t _index,
                                      OutputUnionType* _parent) const noexcept;
 
-  OutputVarType add_null_to_array(OutputArrayType* _parent) const noexcept;
+  OutputVarType add_null_to_array(OutputArrayType* _parent) const noexcept {
+    return add_null(_parent);
+  }
 
   OutputVarType add_null_to_map(const std::string_view& _name,
-                                OutputMapType* _parent) const noexcept;
+                                OutputMapType* _parent) const noexcept {
+    return add_null(_parent);
+  }
 
   OutputVarType add_null_to_object(const std::string_view& _name,
-                                   OutputObjectType* _parent) const noexcept;
+                                   OutputObjectType* _parent) const noexcept {
+    return add_null(_parent);
+  }
 
   OutputVarType add_null_to_union(const size_t _index,
                                   OutputUnionType* _parent) const noexcept;
@@ -184,6 +190,8 @@ class Writer {
   void end_object(OutputObjectType* _obj) const noexcept { _obj->end(); }
 
  private:
+  Writer::OutputVarType add_null(FlatbufOutputParent* _parent) const noexcept;
+
   /// Adds a new value to the parent.
   template <class T, class ParentType>
   OutputVarType add_value(const T& _var, ParentType* _parent) const noexcept {
