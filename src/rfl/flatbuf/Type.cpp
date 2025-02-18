@@ -115,10 +115,6 @@ std::ostream& operator<<(std::ostream& _os, const Type::Vector& _v) {
   return _os << "[" << *_v.type << "]";
 }
 
-std::ostream& operator<<(std::ostream& _os, const Type::Map& _m) {
-  return _os << "TODO(" << *_m.type << ")";
-}
-
 std::ostream& operator<<(std::ostream& _os, const Type::Table& _t) {
   _os << "table " << internal::strings::to_pascal_case(_t.name) << " {";
   if (_t.fields.size() > 0) {
