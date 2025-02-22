@@ -53,10 +53,6 @@ struct Type {
     rfl::Ref<Type> type;
   };
 
-  struct Map {
-    rfl::Ref<Type> type;
-  };
-
   struct Reference {
     std::string type_name;
     const Type* type_ptr = nullptr;
@@ -74,7 +70,7 @@ struct Type {
 
   using ReflectionType =
       rfl::Variant<Bool, Byte, UByte, Int8, Int16, Int32, Int64, UInt8, UInt16,
-                   UInt32, UInt64, Float32, Float64, String, Enum, Vector, Map,
+                   UInt32, UInt64, Float32, Float64, String, Enum, Vector,
                    Reference, Table, Union>;
 
   /// Converts to T or throws.

@@ -280,10 +280,8 @@ Type type_to_flatbuf_schema_type(
                                               _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::StringMap>()) {
-      return schema::Type{
-          .value = schema::Type::Map{
-              .type = Ref<schema::Type>::make(type_to_flatbuf_schema_type(
-                  *_t.value_type_, _definitions, false, _flatbuf_schema))}};
+      // TODO
+      return schema::Type{.value = schema::Type::Bool{}};
 
     } else if constexpr (std::is_same<T, Type::Tuple>()) {
       return type_to_flatbuf_schema_type(

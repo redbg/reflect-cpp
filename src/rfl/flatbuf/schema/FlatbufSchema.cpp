@@ -77,8 +77,7 @@ void FlatbufSchema::set_reference_ptrs_on_type(const FlatbufSchema& _schema,
     using T = std::remove_cvref_t<decltype(_t)>;
     if constexpr (std::is_same<T, Type::Reference>()) {
       _t.type_ptr = find_in_schema(_schema, _t.type_name);
-    } else if constexpr (std::is_same<T, Type::Vector>() ||
-                         std::is_same<T, Type::Map>()) {
+    } else if constexpr (std::is_same<T, Type::Vector>()) {
       set_reference_ptrs_on_type(_schema, _t.type.get());
     } else if constexpr (std::is_same<T, Type::Table>() ||
                          std::is_same<T, Type::Union>()) {

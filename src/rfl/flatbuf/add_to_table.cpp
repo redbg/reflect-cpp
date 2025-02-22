@@ -92,7 +92,6 @@ void add_to_table(const size_t _i, const schema::Type& _type,
       return do_add(TypeWrapper<double>{});
 
     } else if constexpr (std::is_same<U, schema::Type::String>() ||
-                         std::is_same<U, schema::Type::Map>() ||
                          std::is_same<U, schema::Type::Vector>() ||
                          std::is_same<U, schema::Type::Table>()
 
