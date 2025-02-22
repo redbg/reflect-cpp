@@ -14,6 +14,7 @@ struct FlatbufSchema {
   Ref<std::map<std::string, schema::Type>> structs_;
   Ref<std::map<std::string, schema::Type>> enums_;
   Ref<std::map<std::string, schema::Type>> tuples_;
+  Ref<std::map<std::string, schema::Type>> maps_;
   Ref<std::map<std::string, schema::Type>> unions_;
   Ref<std::map<std::string, schema::Type>> map_helpers_;
   Ref<std::map<std::string, schema::Type>> union_helpers_;
