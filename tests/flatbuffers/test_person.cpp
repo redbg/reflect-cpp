@@ -20,8 +20,6 @@ struct Person {
 };
 
 TEST(flatbuffers, test_person) {
-  std::cout << rfl::flatbuf::to_schema<Person>().value() << std::endl;
-
   const auto bart = Person{.first_name = "Bart", .age = 10};
   const auto lisa = Person{.first_name = "Lisa", .age = 8};
   const auto maggie = Person{.first_name = "Maggie", .age = 0};

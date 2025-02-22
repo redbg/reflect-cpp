@@ -155,48 +155,32 @@ Type object_to_flatbuf_schema_type(
     return Type{.value = Type::Reference{.type_name = name}};
   }
 }
-/*
+
 Type map_to_flatbuf_schema_type(
-    const parsing::schema::Type::Map& _map,
+    const parsing::schema::Type::StringMap& _map,
     const std::map<std::string, parsing::schema::Type>& _definitions,
     FlatbufSchema* _flatbuf_schema) {
+  const auto map_name =
+      std::string("Map") + std::to_string(_flatbuf_schema->maps_->size() + 1);
 
-  const auto map_name = std::string("Map") +
-                          std::to_string(_flatbuf_schema->unions_->size() + 1);
+  const auto keys_schema =
+      Type::Vector{.type = Ref<schema::Type>::make(Type::String{})};
 
-  const auto some_schema = Type::Table{
-      .name = union_name + "Some",
+  const auto values_schema = Type::Vector{
+      .type = Ref<schema::Type>::make(type_to_flatbuf_schema_type(
+          *_map.value_type_, _definitions, false, _flatbuf_schema))};
+
+  const auto map_schema = Type::Table{
+      .name = map_name,
       .fields = std::vector<std::pair<std::string, Type>>(
-          {std::make_pair<std::string, Type>(
-              "value",
-              type_to_flatbuf_schema_type(*_optional.type_, _definitions, false,
-                                          _flatbuf_schema))})};
+          {std::make_pair<std::string, Type>("keys", Type{keys_schema}),
+           std::make_pair<std::string, Type>("values", Type{values_schema})})};
 
-  (*_flatbuf_schema->union_helpers_)[some_schema.name] = Type{some_schema};
+  (*_flatbuf_schema->maps_)[map_schema.name] = Type{map_schema};
 
-  const auto union_schema = Type::Union{
-      .name = union_name,
-      .fields = std::vector<std::pair<std::string, Type>>(
-          {std::make_pair<std::string, Type>(
-               "some", Type{Type::Reference{.type_name = some_schema.name}}),
-           std::make_pair<std::string, Type>(
-               "none", Type{Type::Reference{.type_name = "None"}})})};
-
-  (*_flatbuf_schema->unions_)[union_schema.name] = Type{union_schema};
-
-  const auto wrapper_schema = Type::Table{
-      .name = union_name + "Wrapper",
-      .fields = std::vector<std::pair<std::string, Type>>(
-          {std::make_pair<std::string, Type>(
-              "value",
-              Type{.value = Type::Reference{.type_name = union_name}})})};
-
-  (*_flatbuf_schema->union_helpers_)[wrapper_schema.name] =
-      Type{wrapper_schema};
-
-  return Type{.value = Type::Reference{.type_name = wrapper_schema.name}};
+  return Type{.value = Type::Reference{.type_name = map_schema.name}};
 }
-*/
+
 Type optional_to_flatbuf_schema_type(
     const parsing::schema::Type::Optional& _optional,
     const std::map<std::string, parsing::schema::Type>& _definitions,
@@ -321,8 +305,7 @@ Type type_to_flatbuf_schema_type(
                                               _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::StringMap>()) {
-      // TODO
-      return schema::Type{.value = schema::Type::Bool{}};
+      return map_to_flatbuf_schema_type(_t, _definitions, _flatbuf_schema);
 
     } else if constexpr (std::is_same<T, Type::Tuple>()) {
       return type_to_flatbuf_schema_type(

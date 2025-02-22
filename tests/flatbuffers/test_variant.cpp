@@ -28,8 +28,6 @@ struct Shapes {
 TEST(flatbuffers, test_variant) {
   const auto r = Shapes{Rectangle{.height = 10, .width = 5}};
 
-  std::cout << rfl::flatbuf::to_schema<Shapes>().value() << std::endl;
-
   write_and_read(r);
 }
 }  // namespace test_variant
