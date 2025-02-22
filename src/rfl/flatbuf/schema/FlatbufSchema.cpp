@@ -41,8 +41,8 @@ std::ostream& operator<<(std::ostream& _os,
                          const FlatbufSchema& _flatbuf_schema) {
   _os << *_flatbuf_schema.enums_ << *_flatbuf_schema.tuples_
       << *_flatbuf_schema.unions_ << *_flatbuf_schema.union_helpers_
-      << *_flatbuf_schema.structs_ << "root_type " << _flatbuf_schema.root_type_
-      << ";";
+      << *_flatbuf_schema.map_helpers_ << *_flatbuf_schema.structs_
+      << "root_type " << _flatbuf_schema.root_type_ << ";";
   return _os;
 }
 
@@ -62,6 +62,10 @@ const schema::Type* FlatbufSchema::find_in_schema(const FlatbufSchema& _schema,
   }
   it = _schema.unions_->find(_name);
   if (it != _schema.unions_->end()) {
+    return &it->second;
+  }
+  it = _schema.map_helpers_->find(_name);
+  if (it != _schema.map_helpers_->end()) {
     return &it->second;
   }
   it = _schema.union_helpers_->find(_name);
@@ -86,6 +90,23 @@ void FlatbufSchema::set_reference_ptrs_on_type(const FlatbufSchema& _schema,
       }
     }
   });
+}
+
+Result<FlatbufSchema> FlatbufSchema::set_reference_ptrs() const {
+  auto schema = *this;
+  try {
+    set_reference_ptrs_on_map(schema, schema.structs_.get());
+    set_reference_ptrs_on_map(schema, schema.enums_.get());
+    set_reference_ptrs_on_map(schema, schema.tuples_.get());
+    set_reference_ptrs_on_map(schema, schema.unions_.get());
+    set_reference_ptrs_on_map(schema, schema.map_helpers_.get());
+    set_reference_ptrs_on_map(schema, schema.union_helpers_.get());
+    schema.root_type_.type_ptr =
+        find_in_schema(schema, schema.root_type_.type_name);
+  } catch (std::exception& e) {
+    return error(e.what());
+  }
+  return schema;
 }
 
 void FlatbufSchema::set_reference_ptrs_on_map(

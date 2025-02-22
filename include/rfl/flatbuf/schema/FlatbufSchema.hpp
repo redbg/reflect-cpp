@@ -15,25 +15,12 @@ struct FlatbufSchema {
   Ref<std::map<std::string, schema::Type>> enums_;
   Ref<std::map<std::string, schema::Type>> tuples_;
   Ref<std::map<std::string, schema::Type>> unions_;
+  Ref<std::map<std::string, schema::Type>> map_helpers_;
   Ref<std::map<std::string, schema::Type>> union_helpers_;
 
   Type::Reference root_type_;
 
-  Result<FlatbufSchema> set_reference_ptrs() const {
-    auto schema = *this;
-    try {
-      set_reference_ptrs_on_map(schema, schema.structs_.get());
-      set_reference_ptrs_on_map(schema, schema.enums_.get());
-      set_reference_ptrs_on_map(schema, schema.tuples_.get());
-      set_reference_ptrs_on_map(schema, schema.unions_.get());
-      set_reference_ptrs_on_map(schema, schema.union_helpers_.get());
-      schema.root_type_.type_ptr =
-          find_in_schema(schema, schema.root_type_.type_name);
-    } catch (std::exception& e) {
-      return error(e.what());
-    }
-    return schema;
-  }
+  Result<FlatbufSchema> set_reference_ptrs() const;
 
  private:
   static const schema::Type* find_in_schema(const FlatbufSchema& _schema,
