@@ -24,18 +24,18 @@ SOFTWARE.
 
 */
 
-// This file include all other source files, so that the user of the library
-// don't need to add multiple source files into their build.
-// Also, this speeds up compile time, compared to multiple separate .cpp files
-// compilation.
+#include "rfl/flatbuf/FlatbufOutputMap.hpp"
 
-#include "rfl/flatbuf/FlatbufOutputArray.cpp"
-#include "rfl/flatbuf/FlatbufOutputMap.cpp"
-#include "rfl/flatbuf/FlatbufOutputObject.cpp"
-#include "rfl/flatbuf/FlatbufOutputUnion.cpp"
-#include "rfl/flatbuf/SchemaImpl.cpp"
-#include "rfl/flatbuf/Type.cpp"
-#include "rfl/flatbuf/Writer.cpp"
-#include "rfl/flatbuf/add_to_table.cpp"
-#include "rfl/flatbuf/schema/FlatbufSchema.cpp"
-#include "rfl/flatbuf/schema/internal_schema_to_flatbuf_schema.cpp"
+#include <type_traits>
+
+namespace rfl::flatbuf {
+
+void FlatbufOutputMap::add_key(const std::string_view& _key) {}
+
+void FlatbufOutputMap::add_offset(const flatbuffers::uoffset_t _offset) {
+  auto offset = flatbuffers::Offset<>(_offset);
+  const auto ptr = internal::ptr_cast<const uint8_t*>(&offset);
+  values_.insert(values_.end(), ptr, ptr + sizeof(flatbuffers::Offset<>));
+}
+
+}  // namespace rfl::flatbuf

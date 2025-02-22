@@ -30,7 +30,7 @@ class Reader {
   };
 
   struct FlatbufInputMap {
-    const uint8_t* val_;
+    const flatbuffers::Table* val_;
   };
 
   struct FlatbufInputObject {
@@ -123,7 +123,12 @@ class Reader {
   }
 
   rfl::Result<InputMapType> to_map(const InputVarType& _var) const noexcept {
-    // TODO
+    if (!_var.val_) {
+      return error("Could not cast to a table: Is null.");
+    }
+    const auto ptr = internal::ptr_cast<const flatbuffers::Table*>(
+        apply_ptr_correction(_var.val_));
+    return InputMapType{ptr};
   }
 
   rfl::Result<InputUnionType> to_union(

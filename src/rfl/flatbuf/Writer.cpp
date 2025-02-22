@@ -34,7 +34,12 @@ Writer::OutputArrayType Writer::add_array_to_array(
 
 Writer::OutputArrayType Writer::add_array_to_map(
     const std::string_view& _name, const size_t _size,
-    OutputMapType* _parent) const noexcept {}
+    OutputMapType* _parent) const noexcept {
+  _parent->add_key(_name);
+  return OutputArrayType(
+      _parent->value_schema().convert_to<schema::Type::Vector>(), _parent,
+      fbb_.get());
+}
 
 Writer::OutputArrayType Writer::add_array_to_object(
     const std::string_view& _name, const size_t _size,
@@ -60,7 +65,12 @@ Writer::OutputMapType Writer::add_map_to_array(
 
 Writer::OutputMapType Writer::add_map_to_map(
     const std::string_view& _name, const size_t _size,
-    OutputMapType* _parent) const noexcept {}
+    OutputMapType* _parent) const noexcept {
+  _parent->add_key(_name);
+  return OutputMapType(
+      _parent->value_schema().convert_to<schema::Type::Table>(), _parent,
+      fbb_.get());
+}
 
 Writer::OutputMapType Writer::add_map_to_object(
     const std::string_view& _name, const size_t _size,
@@ -79,7 +89,12 @@ Writer::OutputObjectType Writer::add_object_to_array(
 
 Writer::OutputObjectType Writer::add_object_to_map(
     const std::string_view& _name, const size_t _size,
-    OutputMapType* _parent) const noexcept {}
+    OutputMapType* _parent) const noexcept {
+  _parent->add_key(_name);
+  return OutputObjectType(
+      _parent->value_schema().convert_to<schema::Type::Table>(), _parent,
+      fbb_.get());
+}
 
 Writer::OutputObjectType Writer::add_object_to_object(
     const std::string_view& _name, const size_t _size,
@@ -110,7 +125,14 @@ Writer::OutputUnionType Writer::add_union_to_array(
 }
 
 Writer::OutputUnionType Writer::add_union_to_map(
-    const std::string_view& _name, OutputMapType* _parent) const noexcept {}
+    const std::string_view& _name, OutputMapType* _parent) const noexcept {
+  _parent->add_key(_name);
+  return OutputUnionType(_parent->value_schema()
+                             .convert_to<schema::Type::Table>()
+                             .fields.at(0)
+                             .second.convert_to<schema::Type::Union>(),
+                         _parent, fbb_.get());
+}
 
 Writer::OutputUnionType Writer::add_union_to_object(
     const std::string_view& _name, OutputObjectType* _parent) const noexcept {

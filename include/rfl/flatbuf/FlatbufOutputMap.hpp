@@ -4,6 +4,7 @@
 #include <flatbuffers/flatbuffers.h>
 
 #include <cstdint>
+#include <string_view>
 #include <vector>
 
 #include "FlatbufOutputParent.hpp"
@@ -11,39 +12,49 @@
 namespace rfl::flatbuf {
 
 struct FlatbufOutputMap : public FlatbufOutputParent {
-  FlatbufOutputMap(const schema::Type::Vector& _schema,
-                   FlatbufOutputParent* _parent)
-      : schema_(_schema), parent_(_parent), ix_(0), elem_size_(1 /*TODO*/) {}
+  FlatbufOutputMap(const schema::Type::Table& _schema,
+                   FlatbufOutputParent* _parent,
+                   flatbuffers::FlatBufferBuilder* _fbb)
+      : schema_(_schema), parent_(_parent), fbb_(_fbb) {}
 
   ~FlatbufOutputMap() = default;
 
-  /// Adds an offset to the the array.
-  void add_offset(const flatbuffers::uoffset_t _offset) final {
-    *internal::ptr_cast<flatbuffers::Offset<>*>(
-        data_.data() + elem_size_ * ix_) = flatbuffers::Offset<>(_offset);
+  /// Adds a key to the keys.
+  void add_key(const std::string_view& _key);
+
+  /// Adds a scalar to the array.
+  template <class T>
+  void add_scalar(const T _val) {
+    auto ptr = internal::ptr_cast<const uint8_t*>(&_val);
+    values_.insert(values_.end(), ptr, ptr + sizeof(T));
   }
 
-  /// Returns the underlying data.
-  const std::vector<uint8_t>& data() const { return data_; }
+  /// Adds an offset to the the array.
+  void add_offset(const flatbuffers::uoffset_t _offset) final;
 
   /// Returns the underlying schema.
-  const schema::Type::Vector& schema() const { return schema_; }
+  const schema::Type::Table& schema() const { return schema_; }
+
+  /// Returns the schema of the underlying value
+  const schema::Type value_schema() const {
+    return schema_.fields.at(1).second;
+  }
 
  private:
   /// The underlying schema.
-  schema::Type::Vector schema_;
+  schema::Type::Table schema_;
 
   /// The parent. nullptr if this is root.
   FlatbufOutputParent* parent_;
 
-  /// The current index of the vector.
-  size_t ix_;
+  /// Pointer to the underlying flatbuffer builder.
+  flatbuffers::FlatBufferBuilder* fbb_;
 
-  /// The size of the underlying element
-  size_t elem_size_;
+  /// The keys
+  std::vector<flatbuffers::Offset<>> keys_;
 
-  /// The data/
-  std::vector<uint8_t> data_;
+  /// The values
+  std::vector<uint8_t> values_;
 };
 
 }  // namespace rfl::flatbuf

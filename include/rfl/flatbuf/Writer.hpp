@@ -166,7 +166,8 @@ class Writer {
   template <class T>
   OutputVarType add_value_to_map(const std::string_view& _name, const T& _var,
                                  OutputMapType* _parent) const noexcept {
-    // TODO
+    _parent->add_key(_name);
+    return add_value(_var, _parent);
   }
 
   template <class T>
