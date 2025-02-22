@@ -51,7 +51,7 @@ struct FlatbufOutputMap : public FlatbufOutputParent {
   flatbuffers::FlatBufferBuilder* fbb_;
 
   /// The keys
-  std::vector<flatbuffers::Offset<>> keys_;
+  std::vector<flatbuffers::Offset<flatbuffers::String>> keys_;
 
   /// The values
   std::vector<uint8_t> values_;
