@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "FlatbufOutputParent.hpp"
+#include "build_vector.hpp"
 #include "schema/Type.hpp"
 
 namespace rfl::flatbuf {
@@ -37,7 +38,7 @@ struct FlatbufOutputArray : public FlatbufOutputParent {
 
   /// Ends the vector by adding it to the builder.
   void end() {
-    const auto offset = build_vector(*schema_.type);
+    const auto offset = build_vector(*schema_.type, data_, fbb_);
     if (parent_) {
       parent_->add_offset(offset);
     }
@@ -45,10 +46,6 @@ struct FlatbufOutputArray : public FlatbufOutputParent {
 
   /// Returns the underlying schema.
   const schema::Type::Vector& schema() const { return schema_; }
-
- private:
-  /// Builds the vector using the builder.
-  flatbuffers::uoffset_t build_vector(const schema::Type& _type) const;
 
  private:
   /// The underlying schema.
@@ -60,7 +57,7 @@ struct FlatbufOutputArray : public FlatbufOutputParent {
   /// Pointer to the underlying flatbuffer builder.
   flatbuffers::FlatBufferBuilder* fbb_;
 
-  /// The data/
+  /// The data.
   std::vector<uint8_t> data_;
 };
 

@@ -37,5 +37,6 @@ SOFTWARE.
 #include "rfl/flatbuf/Type.cpp"
 #include "rfl/flatbuf/Writer.cpp"
 #include "rfl/flatbuf/add_to_table.cpp"
+#include "rfl/flatbuf/build_vector.cpp"
 #include "rfl/flatbuf/schema/FlatbufSchema.cpp"
 #include "rfl/flatbuf/schema/internal_schema_to_flatbuf_schema.cpp"
